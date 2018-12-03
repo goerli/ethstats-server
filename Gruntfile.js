@@ -1,6 +1,3 @@
-var src = 'src/';
-var dest = 'dist/';
-
 var scripts = [
 	'src/js/app.js',
 	'src/js/controllers.js',
@@ -27,16 +24,6 @@ var vendor = [
 ];
 
 var styles = [
-	'bootstrap.min.css',
-	'minimal-icons-embedded.css',
-	'toastr.min.css',
-	'style.css'
-];
-
-var src_pow = 'src/pow/';
-var dest_pow = 'dist/';
-
-var styles_pow = [
 	'bootstrap.min.css',
 	'minimal-icons-embedded.css',
 	'toastr.min.css',
@@ -126,7 +113,7 @@ module.exports = function(grunt) {
 					{
 						expand: true,
 						cwd: 'src/pow/css/',
-						src: styles_pow,
+						src: styles,
 						dest: 'dist/css/',
 						filter: 'isFile'
 					},
