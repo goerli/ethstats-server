@@ -98,14 +98,14 @@ module.exports = function(grunt) {
 				files: [
 					{
 						expand: true,
-						cwd: 'src/pow/fonts/',
+						cwd: 'src/fonts/',
 						src: ['*.*'],
 						dest: 'dist/fonts/',
 						filter: 'isFile'
 					},
 					{
 						expand: true,
-						cwd: 'src/pow/images/',
+						cwd: 'src/images/',
 						src: ['*.ico'],
 						dest: 'dist/',
 						filter: 'isFile'
@@ -119,7 +119,7 @@ module.exports = function(grunt) {
 					},
 					{
 						expand: true,
-						cwd: 'src/pow/js/lib/',
+						cwd: 'src/js/lib/',
 						src: ['*.*'],
 						dest: 'dist/js/lib'
 					}
