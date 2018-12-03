@@ -48,11 +48,8 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		clean: {
 			build: ['dist'],
-			cleanup_js: ['dist/js/*.*', '!dist/js/netstats.*'],
-			cleanup_css: ['dist/css/*.css', '!dist/css/netstats.*.css'],
-			build_pow: ['dist'],
-			cleanup_js_pow: ['dist/js/*.*', '!dist/js/netstats.*'],
-			cleanup_css_pow: ['dist/css/*.css', '!dist/css/netstats.*.css']
+			js: ['dist/js/*.*', '!dist/js/netstats.*'],
+			css: ['dist/css/*.css', '!dist/css/netstats.*.css']
 		},
 		jade: {
 			build: {
@@ -84,7 +81,7 @@ module.exports = function(grunt) {
 					{
 						expand: true,
 						cwd: 'src/fonts/',
-						src: ['minimal-*.*'],
+						src: ['*.*'],
 						dest: 'dist/fonts/',
 						filter: 'isFile'
 					},
@@ -150,14 +147,6 @@ module.exports = function(grunt) {
 					src: ['*.css', '!*.min.css'],
 					dest: 'dist/css/'
 				}]
-			},
-			build_pow: {
-				files: [{
-					expand: true,
-					cwd: 'dist/css',
-					src: ['*.css', '!*.min.css'],
-					dest: 'dist/css/'
-				}]
 			}
 		},
 		concat: {
@@ -191,48 +180,19 @@ module.exports = function(grunt) {
 				src: ['dist/css/*.min.css', 'dist/css/*.css'],
 				dest: 'dist/css/netstats.min.css'
 			},
-			vendor: {
-				options: {
-					sourceMap: false,
-					sourceMapIncludeSources: true,
-					sourceMapIn: ['dist/js/lib/*.map']
-				},
-				src: vendor,
-				dest: 'dist/js/vendor.min.js'
-			},
-			scripts : {
-				options: {
-					separator: ';\n',
-				},
-				src: scripts,
-				dest: 'dist/js/app.js'
-			},
 			netstats_pow: {
 				options: {
 					sourceMap: false,
 					sourceMapIncludeSources: true,
 					sourceMapIn: ['dist/js/vendor.min.js.map', 'dist/js/app.min.js.map']
 				},
-				src: ['<%= concat.vendor.dest %>', '<%= uglify.app_pow.dest %>'],
+				src: ['<%= concat.vendor.dest %>', '<%= uglify.app.dest %>'],
 				dest: 'dist/js/netstats.min.js',
 				nonull: true,
-			},
-			css_pow: {
-				src: ['dist/css/*.min.css', 'dist/css/*.css'],
-				dest: 'dist/css/netstats.min.css'
 			}
 		},
 		uglify: {
 			app: {
-				options: {
-					mangle: false,
-					sourceMap: false,
-					sourceMapIncludeSources: true
-				},
-				dest: 'dist/js/app.min.js',
-				src: ['<%= concat.scripts.dest %>']
-			},
-			app_pow: {
 				options: {
 					mangle: false,
 					sourceMap: false,
@@ -251,7 +211,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 
-	grunt.registerTask('default', ['clean:build', 'clean:cleanup_js', 'clean:cleanup_css', 'jade:build', 'copy:build', 'cssmin:build', 'concat:vendor', 'concat:scripts', 'uglify:app', 'concat:netstats', 'concat:css', 'clean:cleanup_js', 'clean:cleanup_css']);
-	grunt.registerTask('pow', ['clean:build_pow', 'clean:cleanup_js_pow', 'clean:cleanup_css_pow', 'jade:build_pow', 'copy:build_pow', 'cssmin:build_pow', 'concat:vendor', 'concat:scripts', 'uglify:app_pow', 'concat:netstats_pow', 'concat:css_pow', 'clean:cleanup_js_pow', 'clean:cleanup_css_pow']);
+	grunt.registerTask('default', ['clean:build', 'clean:js', 'clean:css', 'jade:build', 'copy:build', 'cssmin:build', 'concat:vendor', 'concat:scripts', 'uglify:app', 'concat:netstats', 'concat:css', 'clean:js', 'clean:css']);
+	grunt.registerTask('pow', ['clean:build', 'clean:js', 'clean:css', 'jade:build_pow', 'copy:build_pow', 'cssmin:build', 'concat:vendor', 'concat:scripts', 'uglify:app', 'concat:netstats_pow', 'concat:css', 'clean:js', 'clean:css']);
 	grunt.registerTask('poa',   'default');
 };
