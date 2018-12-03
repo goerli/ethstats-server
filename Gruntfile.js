@@ -99,7 +99,7 @@ module.exports = function(grunt) {
 					{
 						expand: true,
 						cwd: 'src/pow/fonts/',
-						src: ['minimal-*.*'],
+						src: ['*.*'],
 						dest: 'dist/fonts/',
 						filter: 'isFile'
 					},
