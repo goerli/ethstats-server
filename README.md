@@ -6,7 +6,7 @@ This is a visual interface for tracking proof-of-work and proof-of-authority net
 
 ## Proof-of-Authority
 
-![Screenshot](src/poa/images/screenshot-v0.1.0.png "Screenshot")
+![Screenshot](src/images/screenshot-v0.1.0.png "Screenshot")
 
 ### Prerequisite
 * node
@@ -40,7 +40,7 @@ see the interface at http://localhost:3000
 
 ## Proof-of-Work
 
-![Screenshot](src/poa/images/screenshot-v0.0.6.png "Screenshot")
+![Screenshot](src/images/screenshot-v0.0.6.png "Screenshot")
 
 Same as above, just run the `pow` build task in Grunt.
 
