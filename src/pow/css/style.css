@@ -65,12 +65,12 @@ table td {
 
 .bg-success,
 .text-success .propagationBox {
-	background: #50fa7b;
+	background: #7bcc3a;
 }
 
 .bg-info,
 .text-info .propagationBox {
-	background: #8be9fd;
+	background: #10a0de;
 }
 
 .bg-highlight,
@@ -80,17 +80,17 @@ table td {
 
 .bg-warning,
 .text-warning .propagationBox {
-	background: #f1fa8c;
+	background: #FFD162;
 }
 
 .bg-orange,
 .text-orange .propagationBox {
-	background: #ffb86c;
+	background: #ff8a00;
 }
 
 .bg-danger,
 .text-danger .propagationBox {
-	background: #ff5555;
+	background: #F74B4B;
 }
 
 .text-gray .propagationBox {
@@ -111,7 +111,7 @@ table td {
 }
 
 .text-orange {
-	color: #ffb86c;
+	color: #ff8a00;
 }
 
 .container-fluid {
