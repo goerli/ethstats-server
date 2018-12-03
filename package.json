@@ -8,7 +8,8 @@
     "npm": "6.4.1"
   },
   "scripts": {
-    "dist": "grunt",
+    "dist-poa": "grunt poa",
+    "dist-pow": "grunt pow",
     "start": "node ./bin/www"
   },
   "dependencies": {
