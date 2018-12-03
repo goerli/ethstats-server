@@ -1,32 +1,32 @@
-var src_poa = 'src/poa/';
-var dest_poa = 'dist/poa/';
+var src = 'src/';
+var dest = 'dist/';
 
-var scripts_poa = [
-	'src/poa/js/app.js',
-	'src/poa/js/controllers.js',
-	'src/poa/js/filters.js',
-	'src/poa/js/directives.js',
-	'src/poa/js/script.js'
+var scripts = [
+	'src/js/app.js',
+	'src/js/controllers.js',
+	'src/js/filters.js',
+	'src/js/directives.js',
+	'src/js/script.js'
 ];
 
-var vendor_poa = [
-	'dist/poa/js/lib/jquery-1.11.3.min.js',
-	'dist/poa/js/lib/bootstrap.min.js',
-	'dist/poa/js/lib/angular.min.js',
-	'dist/poa/js/lib/ngStorage.min.js',
-	'dist/poa/js/lib/lodash.min.js',
-	'dist/poa/js/lib/d3.min.js',
-	'dist/poa/js/lib/d3.tip.min.js',
-	'dist/poa/js/lib/topojson.min.js',
-	'dist/poa/js/lib/datamaps.min.js',
-	'dist/poa/js/lib/moment.min.js',
-	'dist/poa/js/lib/moment.en.min.js',
-	'dist/poa/js/lib/toastr.min.js',
-	'dist/poa/js/lib/jquery.sparkline.min.js',
-	'dist/poa/js/lib/primus.min.js'
+var vendor = [
+	'dist/js/lib/jquery-1.11.3.min.js',
+	'dist/js/lib/bootstrap.min.js',
+	'dist/js/lib/angular.min.js',
+	'dist/js/lib/ngStorage.min.js',
+	'dist/js/lib/lodash.min.js',
+	'dist/js/lib/d3.min.js',
+	'dist/js/lib/d3.tip.min.js',
+	'dist/js/lib/topojson.min.js',
+	'dist/js/lib/datamaps.min.js',
+	'dist/js/lib/moment.min.js',
+	'dist/js/lib/moment.en.min.js',
+	'dist/js/lib/toastr.min.js',
+	'dist/js/lib/jquery.sparkline.min.js',
+	'dist/js/lib/primus.min.js'
 ];
 
-var styles_poa = [
+var styles = [
 	'bootstrap.min.css',
 	'minimal-icons-embedded.css',
 	'toastr.min.css',
@@ -35,28 +35,6 @@ var styles_poa = [
 
 var src_pow = 'src/pow/';
 var dest_pow = 'dist/pow/';
-
-var scripts_pow = [
-	'src/pow/js/app.js',
-	'src/pow/js/controllers.js',
-	'src/pow/js/filters.js',
-	'src/pow/js/directives.js',
-	'src/pow/js/script.js'
-];
-
-var vendor_pow = [
-	'dist/pow/js/lib/jquery-1.11.3.min.js',
-	'dist/pow/js/lib/bootstrap.min.js',
-	'dist/pow/js/lib/angular.min.js',
-	'dist/pow/js/lib/lodash.min.js',
-	'dist/pow/js/lib/d3.min.js',
-	'dist/pow/js/lib/d3.tip.min.js',
-	'dist/pow/js/lib/moment.min.js',
-	'dist/pow/js/lib/moment.en.min.js',
-	'dist/pow/js/lib/toastr.min.js',
-	'dist/pow/js/lib/jquery.sparkline.min.js',
-	'dist/pow/js/lib/primus.min.js'
-];
 
 var styles_pow = [
 	'bootstrap.min.css',
@@ -69,15 +47,15 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 		clean: {
-			build_poa: ['dist/poa'],
-			cleanup_js_poa: ['dist/poa/js/*.*', '!dist/poa/js/netstats.*'],
-			cleanup_css_poa: ['dist/poa/css/*.css', '!dist/poa/css/netstats.*.css'],
+			build: ['dist'],
+			cleanup_js: ['dist/js/*.*', '!dist/js/netstats.*'],
+			cleanup_css: ['dist/css/*.css', '!dist/css/netstats.*.css'],
 			build_pow: ['dist/pow'],
 			cleanup_js_pow: ['dist/pow/js/*.*', '!dist/pow/js/netstats.*'],
 			cleanup_css_pow: ['dist/pow/css/*.css', '!dist/pow/css/netstats.*.css']
 		},
 		jade: {
-			build_poa: {
+			build: {
 				options: {
 					data: {
 						debug: false,
@@ -85,7 +63,7 @@ module.exports = function(grunt) {
 					}
 				},
 				files: {
-					'dist/poa/index.html': 'src/poa/views/index.jade'
+					'dist/index.html': 'src/views/index.jade'
 				}
 			},
 			build_pow: {
@@ -101,34 +79,34 @@ module.exports = function(grunt) {
 			}
 		},
 		copy: {
-			build_poa: {
+			build: {
 				files: [
 					{
 						expand: true,
-						cwd: 'src/poa/fonts/',
+						cwd: 'src/fonts/',
 						src: ['minimal-*.*'],
-						dest: 'dist/poa/fonts/',
+						dest: 'dist/fonts/',
 						filter: 'isFile'
 					},
 					{
 						expand: true,
-						cwd: 'src/poa/images/',
+						cwd: 'src/images/',
 						src: ['*.ico'],
-						dest: 'dist/poa/',
+						dest: 'dist/',
 						filter: 'isFile'
 					},
 					{
 						expand: true,
-						cwd: 'src/poa/css/',
-						src: styles_poa,
-						dest: 'dist/poa/css/',
+						cwd: 'src/css/',
+						src: styles,
+						dest: 'dist/css/',
 						filter: 'isFile'
 					},
 					{
 						expand: true,
-						cwd: 'src/poa/js/lib/',
+						cwd: 'src/js/lib/',
 						src: ['*.*'],
-						dest: 'dist/poa/js/lib'
+						dest: 'dist/js/lib'
 					}
 				]
 			},
@@ -165,12 +143,12 @@ module.exports = function(grunt) {
 			}
 		},
 		cssmin: {
-			build_poa: {
+			build: {
 				files: [{
 					expand: true,
-					cwd: 'dist/poa/css',
+					cwd: 'dist/css',
 					src: ['*.css', '!*.min.css'],
-					dest: 'dist/poa/css/'
+					dest: 'dist/css/'
 				}]
 			},
 			build_pow: {
@@ -183,50 +161,50 @@ module.exports = function(grunt) {
 			}
 		},
 		concat: {
-			vendor_poa: {
+			vendor: {
 				options: {
 					souceMap: false,
 					sourceMapIncludeSources: true,
-					sourceMapIn: ['dist/poa/js/lib/*.map']
+					sourceMapIn: ['dist/js/lib/*.map']
 				},
-				src: vendor_poa,
-				dest: 'dist/poa/js/vendor.min.js'
+				src: vendor,
+				dest: 'dist/js/vendor.min.js'
 			},
-			scripts_poa : {
+			scripts : {
 				options: {
 					separator: ';\n',
 				},
-				src: scripts_poa,
-				dest: 'dist/poa/js/app.js'
+				src: scripts,
+				dest: 'dist/js/app.js'
 			},
-			netstats_poa: {
+			netstats: {
 				options: {
 					sourceMap: false,
 					sourceMapIncludeSources: true,
-					sourceMapIn: ['dist/poa/js/vendor.min.js.map', 'dist/poa/js/app.min.js.map']
+					sourceMapIn: ['dist/js/vendor.min.js.map', 'dist/js/app.min.js.map']
 				},
-				src: ['<%= concat.vendor_poa.dest %>', '<%= uglify.app_poa.dest %>'],
-				dest: 'dist/poa/js/netstats.min.js',
+				src: ['<%= concat.vendor.dest %>', '<%= uglify.app.dest %>'],
+				dest: 'dist/js/netstats.min.js',
 				nonull: true
 			},
-			css_poa: {
-				src: ['dist/poa/css/*.min.css', 'dist/poa/css/*.css'],
-				dest: 'dist/poa/css/netstats.min.css'
+			css: {
+				src: ['dist/css/*.min.css', 'dist/css/*.css'],
+				dest: 'dist/css/netstats.min.css'
 			},
-			vendor_pow: {
+			vendor: {
 				options: {
 					sourceMap: false,
 					sourceMapIncludeSources: true,
 					sourceMapIn: ['dist/pow/js/lib/*.map']
 				},
-				src: vendor_pow,
+				src: vendor,
 				dest: 'dist/pow/js/vendor.min.js'
 			},
-			scripts_pow : {
+			scripts : {
 				options: {
 					separator: ';\n',
 				},
-				src: scripts_pow,
+				src: scripts,
 				dest: 'dist/pow/js/app.js'
 			},
 			netstats_pow: {
@@ -235,7 +213,7 @@ module.exports = function(grunt) {
 					sourceMapIncludeSources: true,
 					sourceMapIn: ['dist/pow/js/vendor.min.js.map', 'dist/pow/js/app.min.js.map']
 				},
-				src: ['<%= concat.vendor_pow.dest %>', '<%= uglify.app_pow.dest %>'],
+				src: ['<%= concat.vendor.dest %>', '<%= uglify.app_pow.dest %>'],
 				dest: 'dist/pow/js/netstats.min.js',
 				nonull: true,
 			},
@@ -245,14 +223,14 @@ module.exports = function(grunt) {
 			}
 		},
 		uglify: {
-			app_poa: {
+			app: {
 				options: {
 					mangle: false,
 					sourceMap: false,
 					sourceMapIncludeSources: true
 				},
-				dest: 'dist/poa/js/app.min.js',
-				src: ['<%= concat.scripts_poa.dest %>']
+				dest: 'dist/js/app.min.js',
+				src: ['<%= concat.scripts.dest %>']
 			},
 			app_pow: {
 				options: {
@@ -261,7 +239,7 @@ module.exports = function(grunt) {
 					sourceMapIncludeSources: true
 				},
 				dest: 'dist/pow/js/app.min.js',
-				src: ['<%= concat.scripts_pow.dest %>']
+				src: ['<%= concat.scripts.dest %>']
 			}
 		}
 	});
@@ -273,9 +251,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 
-	grunt.registerTask('poa', ['clean:build_poa', 'clean:cleanup_js_poa', 'clean:cleanup_css_poa', 'jade:build_poa', 'copy:build_poa', 'cssmin:build_poa', 'concat:vendor_poa', 'concat:scripts_poa', 'uglify:app_poa', 'concat:netstats_poa', 'concat:css_poa', 'clean:cleanup_js_poa', 'clean:cleanup_css_poa']);
-	grunt.registerTask('pow', ['clean:build_pow', 'clean:cleanup_js_pow', 'clean:cleanup_css_pow', 'jade:build_pow', 'copy:build_pow', 'cssmin:build_pow', 'concat:vendor_pow', 'concat:scripts_pow', 'uglify:app_pow', 'concat:netstats_pow', 'concat:css_pow', 'clean:cleanup_js_pow', 'clean:cleanup_css_pow']);
-	grunt.registerTask('default', 'poa');
+	grunt.registerTask('default', ['clean:build', 'clean:cleanup_js', 'clean:cleanup_css', 'jade:build', 'copy:build', 'cssmin:build', 'concat:vendor', 'concat:scripts', 'uglify:app', 'concat:netstats', 'concat:css', 'clean:cleanup_js', 'clean:cleanup_css']);
+	grunt.registerTask('pow', ['clean:build_pow', 'clean:cleanup_js_pow', 'clean:cleanup_css_pow', 'jade:build_pow', 'copy:build_pow', 'cssmin:build_pow', 'concat:vendor', 'concat:scripts', 'uglify:app_pow', 'concat:netstats_pow', 'concat:css_pow', 'clean:cleanup_js_pow', 'clean:cleanup_css_pow']);
 	grunt.registerTask('build',   'default');
-	grunt.registerTask('all',   ['poa', 'pow']);
+	grunt.registerTask('all',   ['default', 'pow']);
 };
