@@ -1,15 +1,14 @@
 {
-  "name": "netstats-server",
-  "description": "Görli Network Dashboard",
-  "version": "0.1.0",
+  "name": "ethstats-server",
+  "description": "Ethstats Network Dashboard",
+  "version": "0.2.0",
   "private": true,
   "engines": {
     "node": "8.11.1",
     "npm": "6.4.1"
   },
   "scripts": {
-    "dist-poa": "grunt poa",
-    "dist-pow": "grunt pow",
+    "dist": "grunt",
     "start": "node ./bin/www"
   },
   "dependencies": {

@@ -5,5 +5,5 @@ node_js: '8'
 before_install: npm install -g grunt-cli
 install:
   - npm install
-  - npm run dist-pow
-  - npm run dist-poa
+  - npm run dist -- pow
+  - npm run dist -- poa
