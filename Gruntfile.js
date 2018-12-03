@@ -169,7 +169,6 @@ module.exports = function(grunt) {
 			}
 		},
 		uglify: {
-
 			app: {
 				options: {
 					mangle: false,
