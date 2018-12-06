@@ -7,6 +7,9 @@ This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-a
 ## Proof-of-Authority
 ![Screenshot](src/images/screenshot-poa.png "Screenshot POA")
 
+* Demo: https://kovan-stats.parity.io/
+* Demo: https://stats.goerli.net/
+
 #### Prerequisite
 * node
 * npm
@@ -41,6 +44,8 @@ Find the interface at http://localhost:3000
 ## Proof-of-Work (Legacy)
 
 ![Screenshot](src/images/screenshot-pow.png "Screenshot POW")
+
+* Demo: https://ropsten-stats.parity.io/
 
 Same as above, just run the `pow` build task in Grunt.
 
