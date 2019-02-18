@@ -31,6 +31,8 @@ var styles = [
 ];
 
 module.exports = function(grunt) {
+	scripts.unshift(grunt.option('configPath') || 'src/js/defaultConfig.js');
+
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 		clean: {
