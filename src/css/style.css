@@ -4,7 +4,8 @@ html {
 
 body {
 	width: 100%;
-	min-width: 1900px;
+	overflow-x: hidden;
+	overflow-y: scroll;
 	font-smooth: auto;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -122,6 +123,7 @@ table td {
 .stat-holder {
 	background: #090909;
 	border: 1px solid rgba(255,255,255,0.05);
+	overflow: hidden;
 }
 
 .big-info {

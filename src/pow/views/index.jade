@@ -4,7 +4,7 @@ extends ./layout.jade
 block content
   div.container-fluid(ng-controller='StatsCtrl')
     div.row(ng-cloak)
-      div.col-xs-2.stat-holder
+      div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder
         div.big-info.bestblock.text-info
           div.pull-left.icon-full-width
             i.icon-block
@@ -12,7 +12,7 @@ block content
             span.small-title best block
             span.big-details {{'#'}}{{ bestBlock | number}}
           div.clearfix
-      div.col-xs-2.stat-holder
+      div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder
         div.big-info.uncleCount.text-info
           div.pull-left.icon-full-width
             i.icon-uncle
@@ -21,7 +21,7 @@ block content
               span.small (current / last 50)
             span.big-details {{ bestStats.block.uncles.length }}/{{ uncleCount }}
           div.clearfix
-      div.col-xs-2.stat-holder
+      div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder
         div.big-info.blocktime(class="{{ lastBlock | timeClass : true }}")
           div.pull-left.icon-full-width
             i.icon-time
@@ -30,7 +30,7 @@ block content
             span.big-details {{ lastBlock | blockTimeFilter }}
             //- span.big-details(time-ago="lastBlock")
           div.clearfix
-      div.col-xs-2.stat-holder
+      div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder
         div.big-info.avgblocktime(class="{{ avgBlockTime | avgTimeClass }}")
           div.pull-left.icon-full-width
             i.icon-gas
@@ -38,7 +38,7 @@ block content
             span.small-title avg block time
             span.big-details {{ avgBlockTime | avgTimeFilter }}
           div.clearfix
-      div.col-xs-2.stat-holder
+      div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder
         div.big-info.difficulty.text-orange
           div.pull-left.icon-full-width
             i.icon-hashrate
@@ -46,7 +46,7 @@ block content
             span.small-title avg network hashrate
             span.big-details(ng-bind-html="avgHashrate | networkHashrateFilter")
           div.clearfix
-      div.col-xs-2.stat-holder
+      div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder
         div.big-info.difficulty.text-danger
           div.pull-left.icon-full-width
             i.icon-difficulty
@@ -55,39 +55,34 @@ block content
             span.big-details
               span.small-hash {{ lastDifficulty | totalDifficultyFilter }}
           div.clearfix
-
-      div.clearfix
-
-
-    div.row(ng-cloak)
       div.col-xs-12.stats-boxes(style="padding-top: 0px;")
         div.row.second-row
-          div.col-xs-2.stat-holder.box
+          div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder.box
             div.active-nodes(class="{{ nodesActive | nodesActiveClass : nodesTotal }}")
               i.icon-node
               span.small-title active nodes
               span.small-value {{nodesActive}}/{{nodesTotal}}
-          div.col-xs-2.stat-holder.box
+          div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder.box
             div.gasprice.text-info
               i.icon-gasprice
               span.small-title gas price
               span.small-value {{ bestStats.gasPrice.toString() | gasPriceFilter }}
-          div.col-xs-2.stat-holder.box
+          div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder.box
             div.gasprice.text-info
               i.icon-gasprice
               span.small-title gas limit
               span.small-value {{ bestStats.block.gasLimit }} gas
-          div.col-xs-2.stat-holder.box
+          div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder.box
             div.page-latency(class="{{ {active: true, latency: latency} | latencyClass }}")
               i.icon-clock
               span.small-title page latency
               span.small-value {{latency}} ms
-          div.col-xs-2.stat-holder.box
+          div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder.box
             div.uptime(class="{{ upTimeTotal | upTimeClass : true }}")
               i.icon-bulb
               span.small-title uptime
               span.small-value {{ upTimeTotal | upTimeFilter }}
-          div.col-xs-2.stat-holder.box
+          div.col-xs-6.col-sm-4.col-md-3.col-lg-2.stat-holder.box
 
         div.row
           div.col-xs-8
@@ -156,7 +151,7 @@ block content
             //- div.col-xs-12
             nodemap#mapHolder(data="map")
 
-    div.row(ng-cloak, style="padding-top: 10px")
+    div.row(ng-cloak, style="padding-top: 10px; overflow-y: hidden; overflow-x: scroll;")
       table.table.table-striped
         thead
           tr.text-info
