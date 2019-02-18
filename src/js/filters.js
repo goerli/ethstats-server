@@ -75,6 +75,13 @@ angular.module('netStatsApp.filters', [])
 		return $sce.trustAsHtml('<span class="small">' + filter('number')(result.toFixed(1)) + ' <span class="small-hash">' + unit + 'H/s</span></span>');
 	};
 }])
+.filter('stakingFilter', ['$sce', '$filter', function($sce, filter) {
+	return function(hashes, isMining) {
+		if( !isMining )
+			return $sce.trustAsHtml('<i class="icon-cancel"></i>');
+		return $sce.trustAsHtml('<i class="icon-check"></i>');
+	};
+}])
 .filter('totalDifficultyFilter', function() {
 	return function(hashes) {
 		var result = hashes;
