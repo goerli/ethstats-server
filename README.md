@@ -33,6 +33,12 @@ In order to build the static files you have to run grunt tasks which will genera
 grunt poa
 ```
 
+To build the static files for a network other than Ethereum copy and change src/js/defaultConfig.js and run the following command.
+
+```bash
+grunt poa --configPath="src/js/someOtherConfig.js"
+```
+
 #### Run
 Start a node process and pass the websocket secret to it.
 
