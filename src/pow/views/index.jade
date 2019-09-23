@@ -29,6 +29,14 @@ block content
             span.small-title avg block time
             span.big-details {{ avgBlockTime | avgTimeFilter }}
           div.clearfix
+      div.col-xs-2.stat-holder
+        div.big-info.blockremain.text-info
+          div.pull-left.icon-full-width
+            i.icon-block
+          div.big-details-holder
+            span.small-title blocks till epoch
+            span.big-details {{ bestStats.block.blockRemain | number }}
+          div.clearfix
       div.clearfix
 
 
@@ -51,6 +59,11 @@ block content
               span.small-title gas limit
               span.small-value {{ bestStats.block.gasLimit }} gas
           div.col-xs-2.stat-holder.box
+            div.gasprice.text-info
+              i.icon-block
+              span.small-title epoch size
+              span.small-value {{ bestStats.block.epochSize }}
+          div.col-xs-2.stat-holder.box
             div.page-latency(class="{{ {active: true, latency: latency} | latencyClass }}")
               i.icon-clock
               span.small-title page latency
@@ -60,7 +73,6 @@ block content
               i.icon-bulb
               span.small-title uptime
               span.small-value {{ upTimeTotal | upTimeFilter }}
-          div.col-xs-2.stat-holder.box
 
         div.row
           div.col-xs-8
