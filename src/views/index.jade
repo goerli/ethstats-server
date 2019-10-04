@@ -9,7 +9,7 @@ block content
           div.pull-left.icon-full-width
             i.icon-block
           div.big-details-holder
-            span.small-title best block
+            span.small-title block
             span.big-details {{'#'}}{{ bestBlock | number}}
           div.clearfix
       div.col-xs-2.stat-holder
@@ -91,7 +91,7 @@ block content
       div.col-xs-2.stat-holder.xpull-right
         div.big-info.chart.xdouble-chart.text-danger
           //- i.icon-hashrate
-          span.small-title last blocks miners
+          span.small-title recent validators
           div.blocks-holder(ng-repeat='miner in miners track by miner.miner', data-toggle="tooltip", data-placement="right", data-original-title="{{miner.blocks}}")
             div.block-count(class="{{miner.blocks | minerBlocksClass : 'text-'}}") {{miner.blocks}}
             div.small-title-miner {{miner.miner | minerNameFilter : miner.name}}
