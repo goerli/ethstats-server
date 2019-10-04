@@ -1,4 +1,4 @@
-Ethereum Network Stats with POA and POW support
+Celo Network Stats with POA upport
 ===============================================
 [![Build Status][travis-image]][travis-url] [![dependency status][dep-image]][dep-url]
 
@@ -30,13 +30,13 @@ sudo npm install -g grunt-cli
 In order to build the static files you have to run grunt tasks which will generate dist directories containing the js and css files, fonts and images.
 
 ```bash
-grunt poa
+grunt
 ```
 
 To build the static files for a network other than Ethereum copy and change src/js/defaultConfig.js and run the following command.
 
 ```bash
-grunt poa --configPath="src/js/someOtherConfig.js"
+grunt --configPath="src/js/someOtherConfig.js"
 ```
 
 #### Run
