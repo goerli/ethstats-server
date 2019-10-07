@@ -191,6 +191,4 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 
 	grunt.registerTask('default', ['clean:build', 'clean:js', 'clean:css', 'jade:build', 'copy:build', 'cssmin:build', 'concat:vendor', 'concat:scripts', 'uglify:app', 'concat:netstats', 'concat:css', 'clean:js', 'clean:css']);
-	grunt.registerTask('pow', ['clean:build', 'clean:js', 'clean:css', 'jade:build_pow', 'copy:build_pow', 'cssmin:build', 'concat:vendor', 'concat:scripts', 'uglify:app', 'concat:netstats', 'concat:css', 'clean:js', 'clean:css']);
-	grunt.registerTask('poa',   'default');
 };
