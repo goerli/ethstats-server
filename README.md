@@ -1,4 +1,4 @@
-Celo Network Stats with POA upport
+Celo Network Stats
 ===============================================
 [![Build Status][travis-image]][travis-url] [![dependency status][dep-image]][dep-url]
 
