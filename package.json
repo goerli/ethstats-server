@@ -27,7 +27,7 @@
     "grunt-contrib-jade": "^1.0.0",
     "grunt-contrib-uglify": "^4.0.0",
     "jade": "^1.11.0",
-    "lodash": "4.17.11",
+    "lodash": "4.17.15",
     "primus": "^7.3.1",
     "primus-emit": "^1.0.0",
     "primus-spark-latency": "^0.1.1",
