@@ -40,6 +40,20 @@ module.exports = function(grunt) {
 			js: ['dist/js/*.*', '!dist/js/netstats.*'],
 			css: ['dist/css/*.css', '!dist/css/netstats.*.css']
 		},
+		watch: {
+			css: {
+				files: ['src/css/*.css'],
+				tasks: ['default']
+			},
+			js: {
+				files: ['src/js/*.js'],
+			  	tasks: ['default']
+			},
+			html: {
+				files: ['src/views/*.jade'],
+			  	tasks: ['default']
+			}
+		},
 		jade: {
 			build: {
 				options: {
@@ -50,17 +64,6 @@ module.exports = function(grunt) {
 				},
 				files: {
 					'dist/index.html': 'src/views/index.jade'
-				}
-			},
-			build_pow: {
-				options: {
-					data: {
-						debug: false,
-						pretty: true
-					}
-				},
-				files: {
-					'dist/index.html': 'src/pow/views/index.jade'
 				}
 			}
 		},
@@ -96,37 +99,6 @@ module.exports = function(grunt) {
 					}
 				]
 			},
-			build_pow: {
-				files: [
-					{
-						expand: true,
-						cwd: 'src/fonts/',
-						src: ['*.*'],
-						dest: 'dist/fonts/',
-						filter: 'isFile'
-					},
-					{
-						expand: true,
-						cwd: 'src/images/',
-						src: ['*.*'],
-						dest: 'dist/',
-						filter: 'isFile'
-					},
-					{
-						expand: true,
-						cwd: 'src/pow/css/',
-						src: styles,
-						dest: 'dist/css/',
-						filter: 'isFile'
-					},
-					{
-						expand: true,
-						cwd: 'src/js/lib/',
-						src: ['*.*'],
-						dest: 'dist/js/lib'
-					}
-				]
-			}
 		},
 		cssmin: {
 			build: {
@@ -189,6 +161,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jade');
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
-
+	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.registerTask('default', ['clean:build', 'clean:js', 'clean:css', 'jade:build', 'copy:build', 'cssmin:build', 'concat:vendor', 'concat:scripts', 'uglify:app', 'concat:netstats', 'concat:css', 'clean:js', 'clean:css']);
 };

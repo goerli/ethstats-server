@@ -13,3 +13,5 @@ ws_secret.json
 stats.json
 package-lock.json
 
+# IdeaIDE
+.idea

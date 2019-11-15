@@ -1,6 +1,5 @@
 Celo Network Stats
 ===============================================
-[![Build Status][travis-image]][travis-url] [![dependency status][dep-image]][dep-url]
 
 This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-authority ("testnet") network status. It uses WebSockets to receive stats from running nodes and output them through an angular interface. It is the front-end implementation for [ethstats-client](https://github.com/goerli/ethstats-client).
 
@@ -15,7 +14,7 @@ This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-a
 * npm
 
 #### Installation
-Make sure you have node.js and npm installed.
+Make sure you have node.js (10 or above) and npm installed.
 
 Clone the repository and install the dependencies:
 
@@ -23,7 +22,7 @@ Clone the repository and install the dependencies:
 git clone https://github.com/goerli/ethstats-server
 cd ethstats-server
 npm install
-sudo npm install -g grunt-cli
+npm install -g grunt-cli
 ```
 
 #### Build
@@ -36,33 +35,13 @@ grunt
 To build the static files for a network other than Ethereum copy and change src/js/defaultConfig.js and run the following command.
 
 ```bash
-grunt --configPath="src/js/someOtherConfig.js"
+grunt --configPath="src/js/celoConfig.js"
 ```
 
 #### Run
-Start a node process and pass the websocket secret to it.
+Start a node process and pass a trusted node to it or edit the list of trusted nodes in [the server config](/lib/utils/config.js).
 
 ```bash
-WS_SECRET="asdf" npm start
+TRUSTED_NODE=0x47e172f6cfb6c7d01c1574fa3e2be7cc73269d95 npm start
 ```
 Find the interface at http://localhost:3000
-
-## Proof-of-Work (Legacy)
-
-![Screenshot](src/images/screenshot-pow.png "Screenshot POW")
-
-* Demo: https://ropsten-stats.parity.io/
-
-Same as above, just run the `pow` build task in Grunt.
-
-```bash
-grunt pow
-WS_SECRET="asdf" npm start
-```
-
-:-)
-
-[travis-image]: https://travis-ci.org/goerli/ethstats-server.svg
-[travis-url]: https://travis-ci.org/goerli/ethstats-server
-[dep-image]: https://david-dm.org/goerli/ethstats-server.svg
-[dep-url]: https://david-dm.org/goerli/ethstats-server

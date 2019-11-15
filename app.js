@@ -1,45 +1,24 @@
 var _ = require('lodash');
+const { Keccak } = require('sha3');
+const EC = require('elliptic').ec;
 var logger = require('./lib/utils/logger');
 var chalk = require('chalk');
 var http = require('http');
 
-// Init WS SECRET
-var WS_SECRET;
+let banned = require('./lib/utils/config').banned;
+let reserved = require('./lib/utils/config').reserved;
+let trusted = require('./lib/utils/config').trusted
 
-if( !_.isUndefined(process.env.WS_SECRET) && !_.isNull(process.env.WS_SECRET) )
-{
-	if( process.env.WS_SECRET.indexOf('|') > 0 )
-	{
-		WS_SECRET = process.env.WS_SECRET.split('|');
-	}
-	else
-	{
-		WS_SECRET = [process.env.WS_SECRET];
-	}
+if (process.env.TRUSTED_NODE) {
+  trusted.push(process.env.TRUSTED_NODE)
 }
-else
-{
-	try {
-		var tmp_secret_json = require('./ws_secret.json');
-		WS_SECRET = _.values(tmp_secret_json);
-	}
-	catch (e)
-	{
-		console.error("WS_SECRET NOT SET!!!");
-	}
-}
-
-var banned   = require('./lib/utils/config').banned;
-var reserved = require('./lib/utils/config').reserved;
 
 // Init http server
-if( process.env.NODE_ENV !== 'production' )
-{
-	var app = require('./lib/express');
-	server = http.createServer(app);
-}
-else
-	server = http.createServer();
+if (process.env.NODE_ENV !== 'production') {
+  var app = require('./lib/express');
+  server = http.createServer(app);
+} else
+  server = http.createServer();
 
 // Init socket vars
 var Primus = require('primus');
@@ -50,9 +29,9 @@ var server;
 
 // Init API Socket connection
 api = new Primus(server, {
-	transformer: 'websockets',
-	pathname: '/api',
-	parser: 'JSON'
+  transformer: 'websockets',
+  pathname: '/api',
+  parser: 'JSON'
 });
 
 api.plugin('emit', require('primus-emit'));
@@ -61,9 +40,9 @@ api.plugin('spark-latency', require('primus-spark-latency'));
 
 // Init Client Socket connection
 client = new Primus(server, {
-	transformer: 'websockets',
-	pathname: '/primus',
-	parser: 'JSON'
+  transformer: 'websockets',
+  pathname: '/primus',
+  parser: 'JSON'
 });
 
 client.plugin('emit', require('primus-emit'));
@@ -71,9 +50,9 @@ client.plugin('emit', require('primus-emit'));
 
 // Init external API
 external = new Primus(server, {
-	transformer: 'websockets',
-	pathname: '/external',
-	parser: 'JSON'
+  transformer: 'websockets',
+  pathname: '/external',
+  parser: 'JSON'
 });
 
 external.plugin('emit', require('primus-emit'));
@@ -82,332 +61,339 @@ external.plugin('emit', require('primus-emit'));
 var Collection = require('./lib/collection');
 var Nodes = new Collection(external);
 
-Nodes.setChartsCallback(function (err, charts)
-{
-	if(err !== null)
-	{
-		console.error('COL', 'CHR', 'Charts error:', err);
-	}
-	else
-	{
-		client.write({
-			action: 'charts',
-			data: charts
-		});
-	}
+Nodes.setChartsCallback(function (err, charts) {
+  if (err !== null) {
+    console.error('COL', 'CHR', 'Charts error:', err);
+  } else {
+    client.write({
+      action: 'charts',
+      data: charts
+    });
+  }
 });
+
+const authorize = (proof, stats) => {
+  let isAuthorized = false
+  if (!_.isUndefined(proof)
+    && !_.isUndefined(proof.publicKey)
+    && !_.isUndefined(proof.signature)
+    && !_.isUndefined(stats)) {
+    const hasher = new Keccak(256)
+    hasher.update(JSON.stringify(stats))
+    const msgHash = hasher.digest('hex')
+    const ec = new EC('secp256k1')
+    const pubkeyNoZeroX = proof.publicKey.substr(2)
+    let pubkey
+    try {
+      pubkey = ec.keyFromPublic(pubkeyNoZeroX, 'hex')
+    } catch (e) {
+      console.error('API', 'SIG', 'Public Key Error', e.message)
+      return false
+    }
+    const addressHasher = new Keccak(256)
+    addressHasher.update(pubkeyNoZeroX.substr(2), 'hex')
+    const addressHash = addressHasher.digest("hex").substr(24)
+    if (!(addressHash.toLowerCase() === proof.address.substr(2).toLowerCase())) {
+      console.error('API', 'SIG', 'Address hash did not match', addressHash, proof.address.substr(2))
+    }
+    const signature = {
+      r: proof.signature.substr(2, 64),
+      s: proof.signature.substr(66, 64)
+    }
+    if (!(msgHash === proof.msgHash.substr(2))) {
+      console.error('API', 'SIG', 'Message hash did not match', msgHash, proof.msgHash.substr(2))
+      return false
+    }
+    try {
+      isAuthorized = pubkey.verify(msgHash, signature)
+    } catch (e) {
+      console.error('API', 'SIG', 'Signature Error', e.message)
+      return false
+    }
+  }
+  if (!isAuthorized) {
+    console.error('API', 'SIG', 'Signature did not verify')
+  }
+  return isAuthorized
+}
 
 
 // Init API Socket events
-api.on('connection', function (spark)
-{
-	console.info('API', 'CON', 'Open:', spark.address.ip);
+api.on('connection', function (spark) {
+  console.info('API', 'CON', 'Open:', spark.address.ip);
 
-	spark.on('hello', function (data)
-	{
-		console.info('API', 'CON', 'Hello', data['id']);
+  spark.on('hello', function (data) {
+    const { stats, proof } = data
+    console.info('API', 'CON', 'Hello', stats['id']);
+    if (banned.indexOf(spark.address.ip) >= 0
+      || _.isUndefined(stats.id)
+      || reserved.indexOf(stats.id) >= 0
+      || _.isUndefined(proof)
+      || _.isUndefined(proof.publicKey)
+      || trusted.map(address => address.toLowerCase()).indexOf(proof.address) < 0
+      || !authorize(proof, stats)) {
+      
+      spark.end(undefined, { reconnect: false });
+      console.error('API', 'CON', 'Closed - wrong auth', data);
 
-		if( _.isUndefined(data.secret) || WS_SECRET.indexOf(data.secret) === -1 || banned.indexOf(spark.address.ip) >= 0 || _.isUndefined(data.id) || reserved.indexOf(data.id) >= 0 )
-		{
-			spark.end(undefined, { reconnect: false });
-			console.error('API', 'CON', 'Closed - wrong auth', data);
+      return false;
+    }
+    
+    if (!_.isUndefined(stats.id) && !_.isUndefined(stats.info)) {
+      stats.ip = spark.address.ip;
+      stats.spark = spark.id;
+      stats.latency = spark.latency || 0;
 
-			return false;
-		}
+      Nodes.add(stats, function (err, info) {
+        if (err !== null) {
+          console.error('API', 'CON', 'Connection error:', err);
+          return false;
+        }
 
-		if( !_.isUndefined(data.id) && !_.isUndefined(data.info) )
-		{
-			data.ip = spark.address.ip;
-			data.spark = spark.id;
-			data.latency = spark.latency || 0;
+        if (info !== null) {
+          spark.emit('ready');
 
-			Nodes.add( data, function (err, info)
-			{
-				if(err !== null)
-				{
-					console.error('API', 'CON', 'Connection error:', err);
-					return false;
-				}
-
-				if(info !== null)
-				{
-					spark.emit('ready');
-
-					console.success('API', 'CON', 'Connected', data.id);
-
-					client.write({
-						action: 'add',
-						data: info
-					});
-				}
-			});
-		}
-	});
-
-
-	spark.on('update', function (data)
-	{
-		if( !_.isUndefined(data.id) && !_.isUndefined(data.stats) )
-		{
-			Nodes.update(data.id, data.stats, function (err, stats)
-			{
-				if(err !== null)
-				{
-					console.error('API', 'UPD', 'Update error:', err);
-				}
-				else
-				{
-					if(stats !== null)
-					{
-						client.write({
-							action: 'update',
-							data: stats
-						});
-
-						console.info('API', 'UPD', 'Update from:', data.id, 'for:', stats);
-
-						Nodes.getCharts();
-					}
-				}
-			});
-		}
-		else
-		{
-			console.error('API', 'UPD', 'Update error:', data);
-		}
-	});
+          console.success('API', 'CON', 'Connected', stats.id);
+          
+          client.write({
+            action: 'add',
+            data: info
+          });
+        }
+      });
+    }
+  });
 
 
-	spark.on('block', function (data)
-	{
-		if( !_.isUndefined(data.id) && !_.isUndefined(data.block) )
-		{
-			Nodes.addBlock(data.id, data.block, function (err, stats)
-			{
-				if(err !== null)
-				{
-					console.error('API', 'BLK', 'Block error:', err);
-				}
-				else
-				{
-					if(stats !== null)
-					{
-						client.write({
-							action: 'block',
-							data: stats
-						});
+  spark.on('update', function (data) {
+    if (!_.isUndefined(data.id) && !_.isUndefined(data.stats)) {
+      Nodes.update(data.id, data.stats, function (err, stats) {
+        if (err !== null) {
+          console.error('API', 'UPD', 'Update error:', err);
+        } else {
+          if (stats !== null) {
+            client.write({
+              action: 'update',
+              data: stats
+            });
 
-						console.success('API', 'BLK', 'Block:', data.block['number'], 'td:', data.block['totalDifficulty'], 'from:', data.id, 'ip:', spark.address.ip);
+            console.info('API', 'UPD', 'Update from:', data.id, 'for:', stats);
 
-						Nodes.getCharts();
-					}
-				}
-			});
-		}
-		else
-		{
-			console.error('API', 'BLK', 'Block error:', data);
-		}
-	});
+            Nodes.getCharts();
+          }
+        }
+      });
+    } else {
+      console.error('API', 'UPD', 'Update error:', data);
+    }
+  });
 
 
-	spark.on('pending', function (data)
-	{
-		if( !_.isUndefined(data.id) && !_.isUndefined(data.stats) )
-		{
-			Nodes.updatePending(data.id, data.stats, function (err, stats) {
-				if(err !== null)
-				{
-					console.error('API', 'TXS', 'Pending error:', err);
-				}
+  spark.on('block', function (data) {
+    const { stats, proof } = data
+    if (authorize(proof, stats)
+      && !_.isUndefined(stats.id)
+      && !_.isUndefined(stats.block)) {
+      
+      if (stats.block.validators && stats.block.validators.registered) {
+        stats.block.validators.registered.forEach(validator => {
+          validator.registered = true
+          const node = Nodes.getNodeOrNew({ id: validator.address }, validator)
+          // TODO: only if new node
+          node.setValidatorData(validator)
+          return node.name
+        })
+      }
 
-				if(stats !== null)
-				{
-					client.write({
-						action: 'pending',
-						data: stats
-					});
+      Nodes.addBlock(stats.id, stats.block, function (err, stats) {
+        if (err !== null) {
+          console.error('API', 'BLK', 'Block error:', err);
+        } else {
+          if (stats !== null) {
+            client.write({
+              action: 'block',
+              data: stats
+            });
 
-					console.success('API', 'TXS', 'Pending:', data.stats['pending'], 'from:', data.id);
-				}
-			});
-		}
-		else
-		{
-			console.error('API', 'TXS', 'Pending error:', data);
-		}
-	});
+            console.success('API', 'BLK',
+              'Block:', stats.block['number'],
+              'td:', stats.block['totalDifficulty'],
+              'from:', stats.id, 'ip:', spark.address.ip);
 
-
-	spark.on('stats', function (data)
-	{
-		if( !_.isUndefined(data.id) && !_.isUndefined(data.stats) )
-		{
-
-			Nodes.updateStats(data.id, data.stats, function (err, stats)
-			{
-				if(err !== null)
-				{
-					console.error('API', 'STA', 'Stats error:', err);
-				}
-				else
-				{
-					if(stats !== null)
-					{
-						client.write({
-							action: 'stats',
-							data: stats
-						});
-
-						console.success('API', 'STA', 'Stats from:', data.id);
-					}
-				}
-			});
-		}
-		else
-		{
-			console.error('API', 'STA', 'Stats error:', data);
-		}
-	});
+            Nodes.getCharts();
+          }
+        }
+      });
+    } else {
+      console.error('API', 'BLK', 'Block error:', data);
+    }
+  });
 
 
-	spark.on('history', function (data)
-	{
-		console.success('API', 'HIS', 'Got history from:', data.id);
+  spark.on('pending', function (data) {
+    const { stats, proof } = data
+    if (authorize(proof, stats)
+      && !_.isUndefined(stats.id)
+      && !_.isUndefined(stats.stats)) {
+      Nodes.updatePending(stats.id, stats.stats, function (err, pending) {
+        if (err !== null) {
+          console.error('API', 'TXS', 'Pending error:', err);
+        }
 
-		var time = chalk.reset.cyan((new Date()).toJSON()) + " ";
-		console.time(time, 'COL', 'CHR', 'Got charts in');
+        if (pending !== null) {
+          client.write({
+            action: 'pending',
+            data: pending
+          });
 
-		Nodes.addHistory(data.id, data.history, function (err, history)
-		{
-			console.timeEnd(time, 'COL', 'CHR', 'Got charts in');
-
-			if(err !== null)
-			{
-				console.error('COL', 'CHR', 'History error:', err);
-			}
-			else
-			{
-				client.write({
-					action: 'charts',
-					data: history
-				});
-			}
-		});
-	});
-
-
-	spark.on('node-ping', function (data)
-	{
-		var start = (!_.isUndefined(data) && !_.isUndefined(data.clientTime) ? data.clientTime : null);
-
-		spark.emit('node-pong', {
-			clientTime: start,
-			serverTime: _.now()
-		});
-
-		console.info('API', 'PIN', 'Ping from:', data['id']);
-	});
+          console.success('API', 'TXS', 'Pending:', pending['pending'], 'from:', pending.id);
+        }
+      });
+    } else {
+      console.error('API', 'TXS', 'Pending error:', data);
+    }
+  });
 
 
-	spark.on('latency', function (data)
-	{
-		if( !_.isUndefined(data.id) )
-		{
-			Nodes.updateLatency(data.id, data.latency, function (err, latency)
-			{
-				if(err !== null)
-				{
-					console.error('API', 'PIN', 'Latency error:', err);
-				}
+  spark.on('stats', function (data) {
+    const { stats, proof } = data
+    if (authorize(proof, stats)
+      && !_.isUndefined(stats.id)
+      && !_.isUndefined(stats.stats)) {
 
-				if(latency !== null)
-				{
-					// client.write({
-					// 	action: 'latency',
-					// 	data: latency
-					// });
+      Nodes.updateStats(stats.id, stats.stats, function (err, stats) {
+        if (err !== null) {
+          console.error('API', 'STA', 'Stats error:', err);
+        } else {
+          if (stats !== null) {
+            client.write({
+              action: 'stats',
+              data: stats
+            });
 
-					console.info('API', 'PIN', 'Latency:', latency, 'from:', data.id);
-				}
-			});
-
-			if( Nodes.requiresUpdate(data.id) )
-			{
-				var range = Nodes.getHistory().getHistoryRequestRange();
-
-				spark.emit('history', range);
-				console.info('API', 'HIS', 'Asked:', data.id, 'for history:', range.min, '-', range.max);
-
-				Nodes.askedForHistory(true);
-			}
-		}
-	});
+            console.success('API', 'STA', 'Stats from:', stats.id);
+          }
+        }
+      });
+    }
+  });
 
 
-	spark.on('end', function (data)
-	{
-		Nodes.inactive(spark.id, function (err, stats)
-		{
-			if(err !== null)
-			{
-				console.error('API', 'CON', 'Connection end error:', err);
-			}
-			else
-			{
-				client.write({
-					action: 'inactive',
-					data: stats
-				});
+  spark.on('history', function (data) {
+    const { stats, proof } = data
+    if (authorize(proof, stats)) {
+      console.success('API', 'HIS', 'Got history from:', stats.id);
 
-				console.warn('API', 'CON', 'Connection with:', spark.id, 'ended:', data);
-			}
-		});
-	});
+      var time = chalk.reset.cyan((new Date()).toJSON()) + " ";
+      console.time(time, 'COL', 'CHR', 'Got charts in');
+      // Nodes.addHistory(stats.id, stats.history, function (err, history) {
+      //   console.timeEnd(time, 'COL', 'CHR', 'Got charts in');
+      //   if (err !== null) {
+      //     console.error('COL', 'CHR', 'History error:', err);
+      //   } else {
+      //     client.write({
+      //       action: 'charts',
+      //       data: history
+      //     });
+      //   }
+      // });
+    }
+  });
+
+
+  spark.on('node-ping', function (data) {
+    const { stats, proof } = data
+    if (authorize(proof, stats)) {
+      const start = (!_.isUndefined(stats) && !_.isUndefined(stats.clientTime) ? stats.clientTime : null);
+
+      spark.emit('node-pong', {
+        clientTime: start,
+        serverTime: _.now()
+      });
+
+      console.success('API', 'PIN', 'Ping from:', stats['id']);
+    }
+  });
+
+
+  spark.on('latency', function (data) {
+    const { stats, proof } = data
+    if (authorize(proof, stats)
+      && !_.isUndefined(stats.id)) {
+      Nodes.updateLatency(stats.id, stats.latency, function (err, latency) {
+        if (err !== null) {
+          console.error('API', 'PIN', 'Latency error:', err);
+        }
+
+        if (latency !== null) {
+          console.success('API', 'PIN', 'Latency:', latency, 'from:', stats.id);
+        }
+      });
+
+      if (Nodes.requiresUpdate(stats.id)) {
+        var range = Nodes.getHistory().getHistoryRequestRange();
+
+        spark.emit('history', range);
+        console.success('API', 'HIS', 'Asked:', stats.id, 'for history:', range.min, '-', range.max);
+
+        Nodes.askedForHistory(true);
+      }
+    }
+  });
+
+
+  spark.on('end', function (data) {
+    Nodes.inactive(spark.id, function (err, stats) {
+      if (err !== null) {
+        console.error('API', 'CON', 'Connection end error:', err);
+      } else {
+        client.write({
+          action: 'inactive',
+          data: stats
+        });
+
+        console.warn('API', 'CON', 'Connection with:', spark.id, 'ended:', data);
+      }
+    });
+  });
 });
 
 
+client.on('connection', function (clientSpark) {
+  clientSpark.on('ready', function (data) {
+    clientSpark.emit('init', { nodes: Nodes.all() });
 
-client.on('connection', function (clientSpark)
-{
-	clientSpark.on('ready', function (data)
-	{
-		clientSpark.emit('init', { nodes: Nodes.all() });
+    Nodes.getCharts();
+  });
 
-		Nodes.getCharts();
-	});
+  clientSpark.on('client-pong', function (data) {
+    var serverTime = _.get(data, "serverTime", 0);
+    var latency = Math.ceil((_.now() - serverTime) / 2);
 
-	clientSpark.on('client-pong', function (data)
-	{
-		var serverTime = _.get(data, "serverTime", 0);
-		var latency = Math.ceil( (_.now() - serverTime) / 2 );
-
-		clientSpark.emit('client-latency', { latency: latency });
-	});
+    clientSpark.emit('client-latency', { latency: latency });
+  });
 });
 
-var latencyTimeout = setInterval( function ()
-{
-	client.write({
-		action: 'client-ping',
-		data: {
-			serverTime: _.now()
-		}
-	});
+var latencyTimeout = setInterval(function () {
+  client.write({
+    action: 'client-ping',
+    data: {
+      serverTime: _.now()
+    }
+  });
 }, 5000);
 
 
 // Cleanup old inactive nodes
-var nodeCleanupTimeout = setInterval( function ()
-{
-	client.write({
-		action: 'init',
-		data: Nodes.all()
-	});
+var nodeCleanupTimeout = setInterval(function () {
+  client.write({
+    action: 'init',
+    data: Nodes.all()
+  });
 
-	Nodes.getCharts();
+  Nodes.getCharts();
 
-}, 1000*60*60);
+}, 1000 * 60 * 60);
 
 server.listen(process.env.PORT || 3000);
 

@@ -179,7 +179,22 @@ angular.module('netStatsApp.filters', [])
 		if(hash.substr(0,2) === '0x')
 			hash = hash.substr(2,64);
 
-		return hash.substr(0, 8) + '...' + hash.substr(56, 8);
+		return hash.substr(0, 8) + '..' + hash.substr(56, 8);
+	}
+})
+.filter('nameFilter', function() {
+	return function(name) {
+		if(typeof name === 'undefined')
+			return "?";
+		return name.substr(0, 30) + '..';
+	}
+})
+.filter('addressFilter', function() {
+	return function(address) {
+		if(typeof address === 'undefined')
+			return "?";
+
+		return address.substr(0, 10) + '..';
 	}
 })
 .filter('timeClass', function() {
@@ -390,6 +405,11 @@ angular.module('netStatsApp.filters', [])
 .filter('avgTimeClass', function() {
 	return function(time) {
 		return blockTimeClass(time);
+	}
+})
+.filter('blocksInEpochClass', function() {
+	return function(blocks, epochSize) {
+		return blockTimeClass(Math.round(40*(1-blocks/epochSize)));
 	}
 })
 .filter('upTimeFilter', function() {

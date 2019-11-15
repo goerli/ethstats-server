@@ -8,6 +8,7 @@ body {
 	font-smooth: auto;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	background-color: #2E3338;
 }
 
 @font-face {
@@ -19,7 +20,7 @@ body {
 
 @font-face {
   font-family: 'Source Sans Pro';
-  font-style: normal;
+  font-style: normal;	
   font-weight: 300;
   src: local('Source Sans Pro Light'), local('SourceSansPro-Light'), url(../fonts/SourceSansPro-Light.woff2) format('woff2');
 }
@@ -52,6 +53,10 @@ table td {
 	-moz-osx-font-smoothing: auto;
 }
 
+table tr {
+	border: 1px solid rgba(255,255,255, 0.1);
+}
+
 .propagationBox {
 	position: relative;
 	width: 8px;
@@ -65,12 +70,18 @@ table td {
 
 .bg-success,
 .text-success .propagationBox {
-	background: #50fa7b;
+	background: #35D07F;
+}
+.text-success{
+	color:#35D07F
 }
 
 .bg-info,
 .text-info .propagationBox {
-	background: #8be9fd;
+	background: #73DDFF;
+}
+.text-info {
+	color: #73DDFF;
 }
 
 .bg-highlight,
@@ -80,7 +91,7 @@ table td {
 
 .bg-warning,
 .text-warning .propagationBox {
-	background: #f1fa8c;
+	background: #FFB765;
 }
 
 .bg-orange,
@@ -103,7 +114,7 @@ table td {
 .bg-warning,
 .bg-orange,
 .bg-danger {
-	color: #000;
+	color: #2E3338;
 }
 
 .text-gray {
@@ -120,8 +131,8 @@ table td {
 }
 
 .stat-holder {
-	background: #090909;
-	border: 1px solid rgba(255,255,255,0.05);
+	background: #2E3338;
+	border: 1px solid rgba(255,255,255, 0.1);
 }
 
 .big-info {
@@ -151,7 +162,7 @@ div.small-title-miner {
 	line-height: 20px;
 	letter-spacing: 1px;
 	text-transform: uppercase;
-	color: #aaa;
+	/* color: #aaa; */
 }
 
 span.small-title span.small {
@@ -194,8 +205,8 @@ span.small-title span.small {
 }
 
 .big-info.chart {
-	height: 120px;
-	-webkit-box-sizing: border-box
+	height: 130px;
+	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 }
 
@@ -297,7 +308,7 @@ table i {
 
 table th,
 table td {
-	border-color: #222 !important;
+	border-color: rgba(255,255,255, 0.1) !important;
 }
 
 table td {
@@ -343,7 +354,15 @@ nodepropagchart {
 }
 
 .th-nodename {
-	width: 300px;
+	width: 200px;
+}
+
+.nodeInfo {
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.nodeInfo>span {
 	text-overflow: ellipsis;
 }
 
@@ -556,3 +575,6 @@ svg .y.axis .tick:first-child text {
 		font-size: 10px;
 	}
 }
+
+
+.table-striped>tbody>tr:nth-child(odd){background-color:#2E3338}
