@@ -40,7 +40,7 @@ block content
       div.col-xs-2.stat-holder
         div.big-info.blockremain.text-success
           div.pull-left.icon-full-width
-            i.icon-mining
+            i.icon-check-o
           div.big-details-holder
             span.small-title elected validators
             span.big-details {{ validators.elected.length | number }}
@@ -103,7 +103,7 @@ block content
           div.clearfix
       div.col-xs-2.stat-holder.xpull-right
         div.big-info.chart.xdouble-chart.text-success
-          i.icon-mining
+          i.icon-check-o
           span.small-title recent block proposers
           div.blocks-holder(ng-repeat='miner in miners track by miner.miner', data-toggle="tooltip", data-placement="right", data-original-title="{{miner.blocks}}")
             div.block-count(class="{{miner.blocks | minerBlocksClass : 'text-'}}") {{miner.blocks}}
@@ -129,7 +129,7 @@ block content
             th
               i.icon-check(data-toggle="tooltip", data-placement="top", title="Validating", ng-click="orderTable(['-stats.hashrate'], false)")
             th
-              i.icon-mining(data-toggle="tooltip", data-placement="top", title="Elected", ng-click="orderTable(['-stats.hashrate'], false)")
+              i.icon-check-o(data-toggle="tooltip", data-placement="top", title="Elected", ng-click="orderTable(['-stats.hashrate'], false)")
             th
               i.icon-group(data-toggle="tooltip", data-placement="top", title="Peers", ng-click="orderTable(['-stats.peers'], false)")
             th

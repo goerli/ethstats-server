@@ -1,2 +1,2 @@
-var networkName = 'Ethereum';
+var networkName = 'Celo';
 var faviconPath = '/favicon.ico';
