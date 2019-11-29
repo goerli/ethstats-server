@@ -199,6 +199,7 @@ api.on('connection', function (spark) {
       if (stats.block.validators && stats.block.validators.registered) {
         stats.block.validators.registered.forEach(validator => {
           validator.registered = true
+          trusted.push(validator.address)
           const node = Nodes.getNodeOrNew({ id: validator.address }, validator)
           // TODO: only if new node
           node.setValidatorData(validator)
