@@ -1,3 +1,4 @@
+'use strict';
 
 /* Filters */
 
@@ -49,12 +50,15 @@ angular.module('netStatsApp.filters', [])
 		return (! mining ? 'icon-cancel' : 'icon-check');
 	};
 })
-.filter('hashrateClass', function() {
-	return function(mining, active) {
-		if(! mining || ! active)
-			return 'text-gray';
-
-		return 'text-success';
+.filter('stakingClass', function() {
+	return function(validatorData) {
+		if(validatorData) {
+			if (validatorData.elected)
+				return 'text-success'
+			if (validatorData.registered)
+				return 'text-warning'
+			}
+		return 'text-info';
 	};
 })
 .filter('hashrateFilter', ['$sce', '$filter', function($sce, filter) {
@@ -76,12 +80,27 @@ angular.module('netStatsApp.filters', [])
 	};
 }])
 .filter('stakingFilter', ['$sce', '$filter', function($sce, filter) {
-	return function(hashes, isMining) {
-		if( !isMining )
-			return $sce.trustAsHtml('<i class="icon-cancel"></i>');
-		return $sce.trustAsHtml('<i class="icon-check"></i>');
-	};
+	return function(validatorData) {
+		if(validatorData) {
+			if (validatorData.elected)
+				return $sce.trustAsHtml('<i class="icon-check-o"></i>');
+			if (validatorData.registered)
+				return $sce.trustAsHtml('<i class="icon-check"></i>');
+			}
+		return $sce.trustAsHtml('<i class="icon-block"></i>')
+	}
 }])
+.filter('stakingString', function(){
+	return function (validatorData) {
+		if(validatorData) {
+			if (validatorData.elected)
+				return "Elected";
+			if (validatorData.registered)
+				return "Registered";
+			}
+		return "Full node"
+	}
+})
 .filter('totalDifficultyFilter', function() {
 	return function(hashes) {
 		var result = hashes;
@@ -171,32 +190,77 @@ angular.module('netStatsApp.filters', [])
 		return (typeof gas !== 'undefined' ? parseInt(gas) : '?');
 	}
 })
-.filter('hashFilter', function() {
-	return function(hash) {
+.filter('hashFilter', ['$sce', '$filter', function($sce, filter) {
+	return function(hash, number) {
 		if(typeof hash === 'undefined')
 			return "?";
 
 		if(hash.substr(0,2) === '0x')
-			hash = hash.substr(2,64);
+			hash = hash.substr(2);
+		var hashStr = hash.substr(0, 8) + '..' + hash.substr(hash.length - 8);
 
-		return hash.substr(0, 8) + '..' + hash.substr(56, 8);
-	}
-})
+		return $sce.trustAsHtml('' +
+			'<a class="blockhash" href="' + blockscoutUrl + '/blocks/' + number + '" target="_blank">'
+			+ hashStr +
+			'</a>')
+	}}]
+)
+.filter('blockNumberFilter', ['$sce', '$filter', function($sce, filter) {
+	return function(number) {
+		if(typeof number === 'undefined')
+			return "?";
+
+		return $sce.trustAsHtml('' +
+			'<a class="blockhash" href="' + blockscoutUrl + '/blocks/' + number + '" target="_blank">'
+			+ number +
+			'</a>')
+	}}]
+)
 .filter('nameFilter', function() {
 	return function(name) {
 		if(typeof name === 'undefined')
 			return "?";
-		return name.substr(0, 30) + '..';
+		return name;
 	}
 })
-.filter('addressFilter', function() {
+.filter('addressFilter', ['$sce', '$filter', function($sce, filter) {
+	return function(address) {
+		if(typeof address === 'undefined' || !address)
+			return "";
+		return $sce.trustAsHtml('' +
+			'<a class="blockhash" href="' + blockscoutUrl + '/address/' + address + '" target="_blank">'
+			+ address.substr(2, 10) + '..' +
+			'</a>')
+	}}]
+)
+.filter('longAddressFilter', ['$sce', '$filter', function($sce, filter) {
 	return function(address) {
 		if(typeof address === 'undefined')
 			return "?";
 
-		return address.substr(0, 10) + '..';
-	}
-})
+		if(address.substr(0,2) === '0x')
+			address = address.substr(2);
+
+		return $sce.trustAsHtml('' +
+			'<a class="blockhash" href="' + blockscoutUrl + '/address/' + address + '" target="_blank">'
+			+ address +
+			'</a>')
+	}}]
+)
+.filter('minerHistoryFilter', ['$sce', '$filter', function($sce, filter) {
+	return function(miners, miner) {
+		if (typeof miner === 'undefined')
+			return "?";
+
+		var htmlStr = ""
+		for(var x = miners.length - 1; x >= 0;  x--) {
+			var isMinerClass = miners[x].miner === miner.miner ? 'bg-info' : 'border-gray'
+			htmlStr = htmlStr +
+				'<span class="block ' + isMinerClass + '"></span>'
+		}
+		return $sce.trustAsHtml(htmlStr)
+	}}]
+)
 .filter('timeClass', function() {
 	return function(timestamp, active) {
 		if( ! active)

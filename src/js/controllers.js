@@ -253,7 +253,6 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
             $scope.nodes[index].stats.gasPrice = data.stats.gasPrice;
             $scope.nodes[index].stats.uptime = data.stats.uptime;
             $scope.nodes[index].stats.address = data.stats.address;
-            console.log($scope.nodes[index].stats.address)
             if (!_.isUndefined(data.stats.latency) && _.get($scope.nodes[index], 'stats.latency', 0) !== data.stats.latency) {
               $scope.nodes[index].stats.latency = data.stats.latency;
 
@@ -332,7 +331,6 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
         if (!_.isEqual($scope.miners, data.miners)) {
           $scope.miners = data.miners;
-          getMinersNames();
         }
 
         break;

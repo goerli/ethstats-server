@@ -3,8 +3,7 @@ html {
 }
 
 body {
-	width: 100%;
-	min-width: 1900px;
+	width: 1580px;
 	font-smooth: auto;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -45,12 +44,50 @@ body {
   font-weight: 700;
   src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(../fonts/SourceSansPro-Bold.woff2) format('woff2');
 }
+table {
+	table-layout: fixed;
+}
 
 table td {
 	font-size: 14px;
 	white-space: nowrap !important;
 	-webkit-font-smoothing: subpixel-antialiased;
 	-moz-osx-font-smoothing: auto;
+}
+.col-xs-5ths,
+.col-sm-5ths,
+.col-md-5ths,
+.col-lg-5ths {
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.col-xs-5ths {
+    width: 20%;
+    float: left;
+}
+
+@media (min-width: 768px) {
+    .col-sm-5ths {
+        width: 20%;
+        float: left;
+    }
+}
+
+@media (min-width: 992px) {
+    .col-md-5ths {
+        width: 20%;
+        float: left;
+    }
+}
+
+@media (min-width: 1200px) {
+    .col-lg-5ths {
+        width: 20%;
+        float: left;
+    }
 }
 
 table tr {
@@ -83,6 +120,9 @@ table tr {
 .text-info {
 	color: #73DDFF;
 }
+.border-info {
+	border: 1px solid #73DDFF;
+}
 
 .bg-highlight,
 .text-highlight .propagationBox {
@@ -108,6 +148,10 @@ table tr {
 	background: none !important;
 	border: 1px solid #777;
 }
+.border-gray {
+	border: 1px solid #777;
+}
+
 
 .bg-success,
 .bg-info,
@@ -216,10 +260,13 @@ span.small-title span.small {
 
 .blocks-holder {
 	width: 288px;
-	padding-top: 6px;
 	margin-left: -2px;
 	display: table;
 	margin: 0 auto;
+}
+
+.miner-list  > .blocks-holder ~ .blocks-holder  {
+	color: #35D07F;
 }
 
 .blocks-holder {
@@ -236,19 +283,26 @@ span.small-title span.small {
 	color: #777;
 }
 
-.blocks-holder .block-count {
+.blocks-holder {
 	font-family: 'Lucida Console', "Courier New", Courier, monospace;
-	font-weight: bold;
 	font-size: 10px;
-	padding-top: 3px;
-	float: right;
+	padding-right: 10px;
 }
+
+.blocks-holder .block-count{
+	font-weight: bold;
+}
+
+.blocks-holder .miner-address {
+	padding-left: 10px;
+}
+
 
 .blocks-holder .block {
 	width: 6px;
 	height: 6px;
-	margin: 2px 1px 6px 0px;
-	float: left;
+	margin: 2px 1px 7px 0px;
+	float: right;
 	-webkit-border-radius: 1px;
 	border-radius: 1px;
 	opacity: .8;
@@ -345,7 +399,6 @@ nodepropagchart {
 
 .th-nodecheck,
 .td-nodecheck {
-	width: 38px;
 	text-align: center;
 }
 
@@ -353,9 +406,6 @@ nodepropagchart {
 	left: 0px;
 }
 
-.th-nodename {
-	width: 200px;
-}
 
 .nodeInfo {
 	overflow: hidden;
@@ -366,11 +416,24 @@ nodepropagchart {
 	text-overflow: ellipsis;
 }
 
-.th-nodetype {
-	width: 220px;
+.blockhash,
+.blockhash:hover,
+.nodeInfo>span>a {
+	color: inherit;
+	font-family: monospace;
+	font-size: 10px;
 }
 
-.th-latency {
+.th-nodecheck {
+	width: 38px;
+}
+
+.th-nodename {
+	width: 200px;
+}
+
+.th-nodeaddress,
+.th-validatorgroup {
 	width: 100px;
 }
 
@@ -553,7 +616,6 @@ svg .y.axis .tick:first-child text {
 	.blocks-holder div.small-title-miner {
 		font-family: inherit;
 		font-size: 11px;
-		letter-spacing: -.5px;
 	}
 
 	.blocks-holder {

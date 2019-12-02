@@ -140,9 +140,9 @@ api.on('connection', function (spark) {
     console.info('API', 'CON', 'Hello', stats.id);
 
     if (!_.isUndefined(stats.info)) {
-      stats.ip = spark.address.ip
       stats.id = proof.address
       stats.address = proof.address
+      stats.ip = spark.address.ip
       stats.spark = spark.id
       stats.latency = spark.latency || 0;
 
@@ -200,9 +200,18 @@ api.on('connection', function (spark) {
         stats.block.validators.registered.forEach(validator => {
           validator.registered = true
           trusted.push(validator.address)
-          const node = Nodes.getNodeOrNew({ id: validator.address }, validator)
-          // TODO: only if new node
-          node.setValidatorData(validator)
+          const search = { id: validator.address }
+          const index = Nodes.getIndex(search)
+          const node = Nodes.getNodeOrNew(search, validator)
+          if (index < 0) {
+            // only if new node
+            node.setValidatorData(validator)
+          }
+          node.validatorData = validator
+          if (stats.block.validators.elected.indexOf(validator.address) > -1) {
+            node.validatorData.elected = true
+          }
+          node.validatorData.registered = true
           return node.name
         })
       }
