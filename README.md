@@ -3,11 +3,10 @@ Celo Network Stats
 
 This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-authority ("testnet") network status. It uses WebSockets to receive stats from running nodes and output them through an angular interface. It is the front-end implementation for [ethstats-client](https://github.com/goerli/ethstats-client).
 
-## Proof-of-Authority
-![Screenshot](src/images/screenshot-poa.png "Screenshot POA")
+## Proof-of-Stake
+![Screenshot](https://user-images.githubusercontent.com/6178597/69904869-cba34900-13ac-11ea-9136-13fc51cf246e.gif "Screenshot POS")
 
-* Demo: https://kovan-stats.parity.io/
-* Demo: https://stats.goerli.net/
+* Demo: https://baklavastaging-ethstats.celo-testnet.org/
 
 #### Prerequisite
 * node
