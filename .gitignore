@@ -1,8 +1,16 @@
+# mac
 .DS_Store
 */**/.DS_Store
+
+# npm
 node_modules
-dist
 npm-debug.log
+package-lock.json
+
+## build
+dist
+
+# Unknown, fix me
 ansible/venv
 config/nodes.js
 *~
@@ -11,7 +19,10 @@ config/nodes.js
 .node-xmlhttprequest-*
 ws_secret.json
 stats.json
-package-lock.json
+
+# NYC - code coverage
+coverage
+.nyc_output
 
 # IdeaIDE
 .idea
