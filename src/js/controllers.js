@@ -444,26 +444,6 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
     $scope.upTimeTotal = _.reduce($scope.nodes, function (total, node) {
       return total + node.stats.uptime;
     }, 0) / $scope.nodes.length;
-
-    $scope.map = _.map($scope.nodes, function (node) {
-      var fill = $filter('bubbleClass')(node.stats, $scope.bestBlock);
-
-      if (node.geo != null)
-        return {
-          radius: 3,
-          latitude: node.geo.ll[0],
-          longitude: node.geo.ll[1],
-          nodeName: node.info.name,
-          fillClass: "text-" + fill,
-          fillKey: fill,
-        };
-      else
-        return {
-          radius: 0,
-          latitude: 0,
-          longitude: 0
-        };
-    });
   }
 
   function updateBestBlock() {

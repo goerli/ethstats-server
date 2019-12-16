@@ -205,19 +205,19 @@ api.on('connection', (spark) => {
         })
       }
 
-      Nodes.addBlock(stats.id, stats.block, (err) => {
+      Nodes.addBlock(stats.id, stats.block, (err, updatedStats) => {
         if (err) {
-          console.error('API', 'BLK', 'Block error:', err, stats)
-        } else if (stats) {
+          console.error('API', 'BLK', 'Block error:', err, updatedStats)
+        } else if (updatedStats) {
           client.write({
             action: 'block',
-            data: stats
+            data: updatedStats
           })
 
           console.success('API', 'BLK',
-            'Block:', stats.block['number'],
-            'td:', stats.block['totalDifficulty'],
-            'from:', stats.id, 'ip:', spark.address.ip)
+            'Block:', updatedStats.block['number'],
+            'td:', updatedStats.block['totalDifficulty'],
+            'from:', updatedStats.id, 'ip:', spark.address.ip)
 
           Nodes.getCharts()
         }
