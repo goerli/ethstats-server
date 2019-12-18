@@ -1,6 +1,7 @@
 var scripts = [
   'src/js/app.js',
   'src/js/controllers.js',
+  'src/js/filterFunctions.js',
   'src/js/filters.js',
   'src/js/directives.js',
   'src/js/script.js'

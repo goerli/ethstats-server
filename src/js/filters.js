@@ -1,8 +1,4 @@
 'use strict';
-var mainClass = require('./filterfunctions').mainClass
-var	timeClass = require('./filterfunctions').timeClass
-var blockTimeClass = require('./filterfunctions').blockTimeClass
-var compareVersions = require('./filterfunctions').compareVersions
 
 /* Filters */
 angular.module('netStatsApp.filters', [])

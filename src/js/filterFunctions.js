@@ -54,10 +54,8 @@ function blockTimeClass (diff) {
   return 'text-danger'
 }
 
-module.exports = {
-  peerClass,
-  blockTimeClass,
-  mainClass,
-  timeClass,
-  compareVersions
-}
+angular.peerClass = peerClass
+angular.blockTimeClass = blockTimeClass
+angular.mainClass = mainClass
+angular.timeClass = timeClass
+angular.compareVersions = compareVersions
