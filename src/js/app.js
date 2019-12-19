@@ -9,12 +9,15 @@ netStatsApp.run(function($rootScope) {
 	$rootScope.faviconPath = faviconPath || '/favicon.ico';
 });
 
-
 /* Services */
 
 netStatsApp.factory('socket', function ($rootScope) {
-	var socket = new Primus();
-	return socket;
+	return new Primus({
+		// url: "your url here"
+	}, {
+		pingTimeout: 5 * 1000,
+		timeout: 2 * 1000
+	});
 });
 
 netStatsApp.factory('toastr', function ($rootScope) {

@@ -8,6 +8,7 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	background-color: #2E3338;
+	font-family: "Source Sans Pro", sans-serif;
 }
 
 @font-face {
@@ -107,49 +108,53 @@ table tr {
 
 .bg-success,
 .text-success .propagationBox {
-	background: #35D07F;
+	background: #35D07F!important;
 }
 .text-success{
-	color:#35D07F
+	color:#35D07F!important;
 }
 
 .bg-info,
 .text-info .propagationBox {
-	background: #73DDFF;
+	background: #73DDFF!important;
 }
 .text-info {
-	color: #73DDFF;
+	color: #73DDFF!important;
 }
 .border-info {
-	border: 1px solid #73DDFF;
+	border: 1px solid #73DDFF!important;
 }
 
 .bg-highlight,
 .text-highlight .propagationBox {
-	background: #bd93f9;
+	background: #bd93f9!important;
 }
 
 .bg-warning,
 .text-warning .propagationBox {
-	background: #FFB765;
+	background: #f1fa8c!important;
+}
+
+.text-warning {
+	color: #f1fa8c!important;
 }
 
 .bg-orange,
 .text-orange .propagationBox {
-	background: #ffb86c;
+	background: #ffb86c!important;
 }
 
 .bg-danger,
 .text-danger .propagationBox {
-	background: #ff5555;
+	background: #ff5555!important;
 }
 
 .text-gray .propagationBox {
 	background: none !important;
-	border: 1px solid #777;
+	border: 1px solid #777!important;
 }
 .border-gray {
-	border: 1px solid #777;
+	border: 1px solid #777!important;
 }
 
 
@@ -166,7 +171,7 @@ table tr {
 }
 
 .text-orange {
-	color: #ffb86c;
+	color: #ffb86c!important;
 }
 
 .container-fluid {
@@ -266,7 +271,7 @@ span.small-title span.small {
 }
 
 .miner-list  > .blocks-holder ~ .blocks-holder  {
-	color: #35D07F;
+	color: #35D07F!important;
 }
 
 .blocks-holder {
@@ -453,6 +458,12 @@ nodepropagchart {
 	width: 140px;
 }
 
+.tooltip-inner{
+	color: #000;
+	background-color: #fff;
+	font-size: 14px;
+}
+
 .nodeInfo .tooltip .tooltip-inner {
 	max-width: 400px;
 	text-align: left;
@@ -493,6 +504,11 @@ nodepropagchart {
 
 .d3-tip {
 	padding: 5px 0;
+}
+
+.jqstooltip {
+	border: none!important;
+	background-color: unset!important;
 }
 
 .jqsfield .tooltip-arrow {

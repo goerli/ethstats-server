@@ -46,34 +46,32 @@ block content
           div.clearfix
       div.clearfix
 
-    div.row(ng-cloak)
-      div.col-xs-12.stats-boxes(style="padding-top: 0px;")
-        div.row.second-row
-          div.col-xs-5ths.stat-holder.box
-            div.active-nodes(class="{{ nodesActive | nodesActiveClass : nodesTotal }}")
-              i.icon-node
-              span.small-title active nodes
-              span.small-value {{nodesActive}}/{{nodesTotal}}
-          div.col-xs-5ths.stat-holder.box
-            div.gasprice.text-info
-              i.icon-gasprice
-              span.small-title gas price
-              span.small-value {{ bestStats.gasPrice.toString() | gasPriceFilter }}
-          div.col-xs-5ths.stat-holder.box
-            div.gasprice.text-info
-              i.icon-gasprice
-              span.small-title gas limit
-              span.small-value {{ bestStats.block.gasLimit }} gas
-          div.col-xs-5ths.stat-holder.box
-            div.gasprice.text-warning
-              i.icon-block
-              span.small-title epoch size
-              span.small-value {{ bestStats.block.epochSize }}
-          div.col-xs-5ths.stat-holder.box
-            div.gasprice.text-warning
-              i.icon-check
-              span.small-title registered validators
-              span.small-value {{ validators.registered.length }}
+    div.row(ng-cloak).second-row
+      div.col-xs-5ths.stat-holder.box
+        div.active-nodes(class="{{ nodesActive | nodesActiveClass : nodesTotal }}")
+          i.icon-node
+          span.small-title active nodes
+          span.small-value {{nodesActive}}/{{nodesTotal}}
+      div.col-xs-5ths.stat-holder.box
+        div.gasprice.text-info
+          i.icon-gasprice
+          span.small-title gas price
+          span.small-value {{ bestStats.gasPrice.toString() | gasPriceFilter }}
+      div.col-xs-5ths.stat-holder.box
+        div.gasprice.text-info
+          i.icon-gasprice
+          span.small-title gas limit
+          span.small-value {{ bestStats.block.gasLimit }} gas
+      div.col-xs-5ths.stat-holder.box
+        div.gasprice.text-warning
+          i.icon-block
+          span.small-title epoch size
+          span.small-value {{ bestStats.block.epochSize }}
+      div.col-xs-5ths.stat-holder.box
+        div.gasprice.text-warning
+          i.icon-check
+          span.small-title registered validators
+          span.small-value {{ validators.registered.length }}
 
     div.row(ng-cloak)
       div.col-xs-5ths.stat-holder

@@ -203,111 +203,6 @@ angular.module('netStatsApp.directives', [])
 			}
 		};
 })
-	.directive('nodemap', ['$compile', function($compile) {
-		return {
-			restrict: 'EA',
-			scope: {
-				data: '='
-			},
-			link: function(scope, element, attrs) {
-				var bubbleConfig = {
-					borderWidth: 0,
-					highlightOnHover: false,
-					popupOnHover: true,
-					popupTemplate: function(geo, data) {
-						return ['<div class="tooltip-arrow"></div>',
-								'<div class="hoverinfo ' + data.fillClass + '">',
-									'<div class="propagationBox"></div>',
-									'<strong>',
-									data.nodeName,
-									'</strong>',
-								'</div>'].join('');
-					}
-				};
-
-				scope.init = function() {
-					element.empty();
-
-					var width = 628,
-						height = 202;
-
-					scope.map = new Datamap({
-						element: element[0],
-						scope: 'world',
-						width: width,
-						height: 242,
-						fills: {
-							success: '#50fa7b',
-							info: '#8be9fd',
-							warning: '#f1fa8c',
-							orange: '#ffb86c',
-							danger: '#ff5555',
-							defaultFill: '#282828'
-						},
-						geographyConfig: {
-							borderWidth: 0,
-							borderColor: '#000',
-							highlightOnHover: false,
-							popupOnHover: false
-						},
-						bubblesConfig: {
-							borderWidth: 0,
-							highlightOnHover: false,
-							popupOnHover: true
-						},
-						done: function(datamap) {
-							var ev;
-
-							var zoomListener = d3.behavior.zoom()
-								.size([width, height])
-								.scaleExtent([1, 3])
-								.on("zoom", redraw)
-								.on("zoomend", animadraw);
-
-							function redraw() {
-								datamap.svg.select(".datamaps-subunits").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-								datamap.svg.select(".bubbles").selectAll("circle")
-									.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
-									.attr("r", 3/d3.event.scale);
-
-								ev = d3.event;
-							}
-
-							zoomListener(datamap.svg);
-
-							function animadraw() {
-								var x = Math.min(0, Math.max(ev.translate[0], (-1) * width * (ev.scale-1)));
-								var y = Math.min(0, Math.max(ev.translate[1], (-1) * height * (ev.scale-1)));
-
-								datamap.svg.select(".datamaps-subunits")
-									.transition()
-									.delay(150)
-									.duration(750)
-									.attr("transform", "translate(" + x  + "," + y + ")scale(" + ev.scale + ")");
-
-								datamap.svg.select(".bubbles").selectAll("circle")
-									.transition()
-									.delay(150)
-									.duration(750)
-									.attr("transform", "translate(" + x  + "," + y + ")scale(" + ev.scale + ")")
-									.attr("r", 3/ev.scale);
-
-								zoomListener.translate([x,y]);
-							}
-						}
-					});
-
-					scope.map.bubbles(scope.data, bubbleConfig);
-				}
-
-				scope.init();
-
-				scope.$watch('data', function() {
-					scope.map.bubbles(scope.data, bubbleConfig);
-				}, true);
-			}
-		};
-}])
 	.directive('histogram', ['$compile', function($compile) {
 		return {
 			restrict: 'EA',
@@ -328,35 +223,31 @@ angular.module('netStatsApp.directives', [])
 
 				var TICKS = 40;
 
-				var x = d3.scale.linear()
+				var x = d3.scaleLinear()
 					.domain([0, 10000])
 					.rangeRound([0, width])
 					.interpolate(d3.interpolateRound);
 
-				var y = d3.scale.linear()
+				var y = d3.scaleLinear()
 					.range([height, 0])
 					.interpolate(d3.interpolateRound);
 
-				var color = d3.scale.linear()
+				var color = d3.scaleLinear()
 					.domain([1000, 3000, 7000, 10000])
 					.range(["#50fa7b", "#f1fa8c", "#ffb86c", "#ff5555"]);
 
-				var xAxis = d3.svg.axis()
-					.scale(x)
-					.orient("bottom")
+				var xAxis = d3.axisBottom(x)
 					.ticks(4, ",.1s")
 					.tickFormat(function(t){ return t/1000 + "s"});
 
-				var yAxis = d3.svg.axis()
-					.scale(y)
-					.orient("left")
+				var yAxis = d3.axisLeft(y)
 					.ticks(3)
-					.tickFormat(d3.format("%"));
+					.tickFormat(d3.format(".0%"));
 
-				var line = d3.svg.line()
+				var line = d3.line()
 					.x(function(d) { return x(d.x + d.dx/2) - 1; })
 					.y(function(d) { return y(d.y) - 2; })
-					.interpolate('basis');
+					.curve(d3.curveBasis);
 
 				var tip = d3.tip()
 					.attr('class', 'd3-tip')
@@ -370,21 +261,19 @@ angular.module('netStatsApp.directives', [])
 				{
 					var data = scope.data;
 
-					var x = d3.scale.linear()
+					var x = d3.scaleLinear()
 						.domain([0, 10000])
 						.rangeRound([0, width])
 						.interpolate(d3.interpolateRound);
 
-					var xAxis = d3.svg.axis()
-						.scale(x)
-						.orient("bottom")
+					var xAxis = d3.axisBottom(x)
 						.ticks(4, ",.1s")
 						.tickFormat(function(t){ return t/1000 + "s"});
 
-					var line = d3.svg.line()
+					var line = d3.line()
 						.x(function(d) { return x(d.x + d.dx/2) - 1; })
 						.y(function(d) { return y(d.y) - 2; })
-						.interpolate('basis');
+						.curve(d3.curveBasis);
 
 					// Adjust y axis
 					y.domain([0, d3.max(data, function(d) { return d.y; })]);
@@ -393,7 +282,8 @@ angular.module('netStatsApp.directives', [])
 					element.empty();
 
 					/* Start drawing */
-					var svg = d3.select(".d3-blockpropagation").append("svg")
+					var svg = d3.select(".d3-blockpropagation")
+						.append("svg")
 						.attr("width", width + margin.left + margin.right)
 						.attr("height", height + margin.top + margin.bottom)
 					  .append("g")
@@ -406,13 +296,12 @@ angular.module('netStatsApp.directives', [])
 						.attr("transform", "translate(0," + height + ")")
 						.call(xAxis)
 						.selectAll("text")
-						  .attr("y", 6);
+						.attr("y", 6);
 
 					svg.append("g")
 						.attr("class", "y axis")
 						.attr("transform", "translate(" + width + ", 0)")
 						.call(yAxis);
-
 
 					var bar = svg.append("g")
 						.attr("class", "bars")

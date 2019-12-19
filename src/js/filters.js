@@ -357,7 +357,7 @@ angular.module('netStatsApp.filters', [])
 	};
 })
 .filter('blockTimeFilter', function() {
-	return function(timestamp) {
+	var blockTimeFilter = function(timestamp) {
 		if(timestamp === 0)
 			return '∞';
 
@@ -365,11 +365,19 @@ angular.module('netStatsApp.filters', [])
 		var time = (new Date()).getTime();
 		var diff = Math.floor((time - timestamp)/1000);
 
-		if(diff < 60)
-			return Math.round(diff) + ' s ago';
+		var result
 
-		return moment.duration(Math.round(diff), 's').humanize() + ' ago';
+		if(diff < 60) {
+      result = Math.round(diff) + ' s ago';
+    } else {
+      result = moment.duration(Math.round(diff), 's').humanize() + ' ago';
+    }
+
+		return result;
 	};
+
+  blockTimeFilter.$stateful = true
+  return blockTimeFilter
 })
 .filter('networkHashrateFilter', ['$sce', '$filter', function($sce, filter) {
 	return function(hashes, isMining) {
@@ -547,17 +555,6 @@ angular.module('netStatsApp.filters', [])
 
 		if(node.info.os !== '') {
 			string = "OS: <b>" + (typeof node.info.os !== 'undefined' ? node.info.os + ' ' + node.info.os_v : '?') + "</b>";
-
-			tooltip.push(string);
-		}
-
-		if(node.geo !== null)
-		{
-			string = "Location: <b>";
-
-			if(node.geo.city !== '')
-				string += node.geo.city + ", ";
-			string += node.geo.country + "</b>";
 
 			tooltip.push(string);
 		}

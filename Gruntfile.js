@@ -8,27 +8,25 @@ var scripts = [
 ]
 
 var vendor = [
-  'dist/js/lib/jquery-1.11.3.min.js',
-  'dist/js/lib/bootstrap.min.js',
-  'dist/js/lib/angular.min.js',
-  'dist/js/lib/ngStorage.min.js',
-  'dist/js/lib/lodash.min.js',
-  'dist/js/lib/d3.min.js',
-  'dist/js/lib/d3.tip.min.js',
-  'dist/js/lib/topojson.min.js',
-  'dist/js/lib/datamaps.min.js',
-  'dist/js/lib/moment.min.js',
-  'dist/js/lib/moment.en.min.js',
-  'dist/js/lib/toastr.min.js',
-  'dist/js/lib/jquery.sparkline.min.js',
-  'dist/js/lib/primus.min.js'
+  'node_modules/jquery/dist/jquery.min.js',
+  'node_modules/popper.js/dist/umd/popper.min.js',
+  'node_modules/bootstrap/dist/js/bootstrap.min.js',
+  'node_modules/angular/angular.min.js',
+  'node_modules/ngstorage/ngStorage.min.js',
+  'node_modules/lodash/lodash.min.js',
+  'node_modules/d3/dist/d3.min.js',
+  'node_modules/d3-tip/dist/index.js',
+  'node_modules/moment/min/moment.min.js',
+  'node_modules/moment/locale/en.js',
+  'node_modules/toastr/build/toastr.min.js',
+  'node_modules/jquery-sparkline/jquery.sparkline.min.js'
 ]
 
 var styles = [
-  'bootstrap.min.css',
-  'minimal-icons-embedded.css',
-  'toastr.min.css',
-  'style.css'
+  'node_modules/bootstrap/dist/css/bootstrap.min.css',
+  'src/css/minimal-icons-embedded.css',
+  'node_modules/toastr/build/toastr.min.css',
+  'src/css/style.css'
 ]
 
 module.exports = function (grunt) {
@@ -87,7 +85,7 @@ module.exports = function (grunt) {
           },
           {
             expand: true,
-            cwd: 'src/css/',
+            flatten: true,
             src: styles,
             dest: 'dist/css/',
             filter: 'isFile'
@@ -126,7 +124,7 @@ module.exports = function (grunt) {
           separator: ';\n',
         },
         src: scripts,
-        dest: 'dist/js/app.js'
+        dest: 'dist/js/netstats.js'
       },
       netstats: {
         options: {
@@ -148,7 +146,8 @@ module.exports = function (grunt) {
         options: {
           mangle: false,
           sourceMap: false,
-          sourceMapIncludeSources: true
+          sourceMapIncludeSources: true,
+          compress: true
         },
         dest: 'dist/js/app.min.js',
         src: ['<%= concat.scripts.dest %>']
