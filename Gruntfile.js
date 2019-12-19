@@ -1,13 +1,13 @@
-var scripts = [
-  'src/js/app.js',
-  'src/js/controllers.js',
-  'src/js/filterFunctions.js',
-  'src/js/filters.js',
-  'src/js/directives.js',
-  'src/js/script.js'
+const scripts = [
+  'src/client/js/app.js',
+  'src/client/js/controllers.js',
+  'src/client/js/filterFunctions.js',
+  'src/client/js/filters.js',
+  'src/client/js/directives.js',
+  'src/client/js/script.js'
 ]
 
-var vendor = [
+const vendor = [
   'node_modules/jquery/dist/jquery.min.js',
   'node_modules/popper.js/dist/umd/popper.min.js',
   'node_modules/bootstrap/dist/js/bootstrap.min.js',
@@ -22,15 +22,18 @@ var vendor = [
   'node_modules/jquery-sparkline/jquery.sparkline.min.js'
 ]
 
-var styles = [
+const styles = [
   'node_modules/bootstrap/dist/css/bootstrap.min.css',
-  'src/css/minimal-icons-embedded.css',
+  'node_modules/bootstrap/dist/css/bootstrap.min.css.map',
+  'src/client/css/minimal-icons-embedded.css',
   'node_modules/toastr/build/toastr.min.css',
-  'src/css/style.css'
+  'src/client/css/style.css'
 ]
 
 module.exports = function (grunt) {
-  scripts.unshift(grunt.option('configPath') || 'src/js/defaultConfig.js')
+  scripts.unshift(
+    grunt.option('configPath') || 'src/client/js/defaultConfig.js'
+  )
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -41,15 +44,15 @@ module.exports = function (grunt) {
     },
     watch: {
       css: {
-        files: ['src/css/*.css'],
+        files: ['src/client/css/*.css'],
         tasks: ['default']
       },
       js: {
-        files: ['src/js/*.js'],
+        files: ['src/client/js/*.js'],
         tasks: ['default']
       },
       html: {
-        files: ['src/views/*.jade'],
+        files: ['src/client/views/*.jade'],
         tasks: ['default']
       }
     },
@@ -62,7 +65,7 @@ module.exports = function (grunt) {
           }
         },
         files: {
-          'dist/index.html': 'src/views/index.jade'
+          'dist/index.html': 'src/client/views/index.jade'
         }
       }
     },
@@ -71,14 +74,14 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            cwd: 'src/fonts/',
+            cwd: 'src/client/fonts/',
             src: ['*.*'],
             dest: 'dist/fonts/',
             filter: 'isFile'
           },
           {
             expand: true,
-            cwd: 'src/images/',
+            cwd: 'src/client/images/',
             src: ['*.*'],
             dest: 'dist/',
             filter: 'isFile'
@@ -92,7 +95,7 @@ module.exports = function (grunt) {
           },
           {
             expand: true,
-            cwd: 'src/js/lib/',
+            cwd: 'src/client/js/lib/',
             src: ['*.*'],
             dest: 'dist/js/lib'
           }
@@ -130,7 +133,10 @@ module.exports = function (grunt) {
         options: {
           sourceMap: false,
           sourceMapIncludeSources: true,
-          sourceMapIn: ['dist/js/vendor.min.js.map', 'dist/js/app.min.js.map']
+          sourceMapIn: [
+            'dist/js/vendor.min.js.map',
+            'dist/js/netstats.min.js.map'
+          ]
         },
         src: ['<%= concat.vendor.dest %>', '<%= uglify.app.dest %>'],
         dest: 'dist/js/netstats.min.js',
@@ -145,11 +151,11 @@ module.exports = function (grunt) {
       app: {
         options: {
           mangle: false,
-          sourceMap: false,
+          sourceMap: true,
           sourceMapIncludeSources: true,
           compress: true
         },
-        dest: 'dist/js/app.min.js',
+        dest: 'dist/js/netstats.min.js',
         src: ['<%= concat.scripts.dest %>']
       }
     }
@@ -162,16 +168,17 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-cssmin')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
-	grunt.registerTask('build', [
-		'jade:build',
-		'copy:build',
-		'cssmin:build',
-		'concat:vendor',
-		'concat:scripts',
-		'uglify:app',
-		'concat:netstats',
-		'concat:css',
-	])
+
+  grunt.registerTask('build', [
+    'jade:build',
+    'copy:build',
+    'cssmin:build',
+    'concat:vendor',
+    'concat:scripts',
+    'uglify:app',
+    'concat:netstats',
+    'concat:css',
+  ])
   grunt.registerTask('default', [
     'clean:build',
     'clean:js',

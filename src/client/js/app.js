@@ -6,7 +6,7 @@ var netStatsApp = angular.module('netStatsApp', ['netStatsApp.filters', 'netStat
 
 netStatsApp.run(function($rootScope) {
 	$rootScope.networkName = networkName || 'Ethereum';
-	$rootScope.faviconPath = faviconPath || '/favicon.ico';
+	$rootScope.faviconPath = faviconPath || '/favicon-celo.ico';
 });
 
 /* Services */
