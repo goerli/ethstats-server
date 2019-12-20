@@ -1,18 +1,26 @@
-require('./utils/logger')
+import './utils/logger'
+import * as Primus from "primus"
+import * as primusEmit from "primus-emit"
+import * as primusSparkLatency from "primus-spark-latency"
+import * as _ from "lodash"
+import { Keccak } from 'sha3'
+import { ec as EC } from "elliptic"
+import { createServer } from "http"
+import app from "./express"
+import Collection from './collection'
 
-const _ = require('lodash')
-const { Keccak } = require('sha3')
-const EC = require('elliptic').ec
-const http = require('http')
-const Primus = require('primus')
+// general config
+const clientPingTimeout = 5 * 1000
+const nodeCleanupTimeout = 1000 * 60 * 60
+const port = process.env.PORT || 3000
 
-const app = require('./express')
-const Collection = require('./collection')
+import {
+  banned,
+  reserved,
+  trusted
+} from "./utils/config"
 
-const banned = require('./utils/config').banned
-const reserved = require('./utils/config').reserved
-const trusted = require('./utils/config').trusted
-
+// add trusted from env
 if (process.env.TRUSTED_ADDRESSES) {
   trusted.push(...process.env.TRUSTED_ADDRESSES.split(','))
 }
@@ -23,17 +31,17 @@ if (process.env.RESERVED_ADDRESSES) {
   reserved.push(...process.env.RESERVED_ADDRESSES.split(','))
 }
 
-const clientPingTimeout = 5 * 1000
-const nodeCleanupTimeout = 1000 * 60 * 60
-const defaultPort = 3000
+export default class Server {
 
-// Init http server
+  nodes: Collection
+  api
+  client
+  external
 
-class Server {
-
-  constructor () {
+  constructor() {
     console.log('Starting server!')
-    const server = http.createServer(app)
+
+    const server = createServer(app)
 
     server.headersTimeout = 0.9 * 1000
     server.maxHeadersCount = 0
@@ -63,18 +71,17 @@ class Server {
 
     this.nodes = new Collection(this.external)
 
-    server.listen(process.env.PORT || defaultPort)
-
+    server.listen(port)
   }
 
-  static sanitize (stats) {
+  static sanitize(stats) {
     return (
       !_.isUndefined(stats)
       && !_.isUndefined(stats.id)
     )
   }
 
-  static authorize (proof, stats) {
+  static authorize(proof, stats) {
     let isAuthorized = false
     if (Server.sanitize(stats)
       && !_.isUndefined(proof)
@@ -126,7 +133,7 @@ class Server {
     return isAuthorized
   }
 
-  wireup () {
+  wireup() {
     setInterval(() => {
       this.client.write({
         action: 'client-ping',
@@ -148,20 +155,21 @@ class Server {
     }, nodeCleanupTimeout)
   }
 
-  initApi () {
+  initApi() {
     // Init API Socket connection
-    this.api.plugin('emit', require('primus-emit'))
-    this.api.plugin('spark-latency', require('primus-spark-latency'))
+    this.api.plugin('emit', primusEmit)
+    this.api.plugin('spark-latency', primusSparkLatency)
 
     // Init API Socket events
     this.api.on('connection', (spark) => {
       console.info('API', 'CON', 'Open:', spark.address.ip)
 
       spark.on('hello', (data) => {
-        const { stats, proof } = data
+        const {stats, proof} = data
         if (banned.indexOf(spark.address.ip) >= 0
           || !Server.authorize(proof, stats)) {
-          spark.end(undefined, { reconnect: false })
+          // @ts-ignore
+          spark.end(undefined, {reconnect: false})
           console.error('API', 'CON', 'Closed - wrong auth', data)
           return false
         }
@@ -183,6 +191,7 @@ class Server {
             if (info) {
               spark.emit('ready')
 
+              // @ts-ignore
               console.success('API', 'CON', 'Connected', stats.id)
 
               this.client.write({
@@ -195,7 +204,7 @@ class Server {
       })
 
       spark.on('block', (data) => {
-        const { stats, proof } = data
+        const {stats, proof} = data
         if (Server.sanitize(stats)
           && !_.isUndefined(stats.block)) {
           stats.id = proof.address
@@ -209,7 +218,7 @@ class Server {
               if (validator.signer && trusted.indexOf(validator.signer) === -1) {
                 trusted.push(validator.signer)
               }
-              const search = { id: validator.address }
+              const search = {id: validator.address}
               const index = this.nodes.getIndex(search)
               const node = this.nodes.getNodeOrNew(search, validator)
               if (index < 0) {
@@ -234,6 +243,7 @@ class Server {
                 data: updatedStats
               })
 
+              // @ts-ignore
               console.success('API', 'BLK',
                 'Block:', updatedStats.block['number'],
                 'td:', updatedStats.block['totalDifficulty'],
@@ -248,7 +258,7 @@ class Server {
       })
 
       spark.on('pending', (data) => {
-        const { stats, proof } = data
+        const {stats, proof} = data
         if (Server.sanitize(stats)
           && !_.isUndefined(stats.stats)) {
           stats.id = proof.address
@@ -263,6 +273,7 @@ class Server {
                 data: pending
               })
 
+              // @ts-ignore
               console.success('API', 'TXS', 'Pending:', pending['pending'], 'from:', pending.id)
             }
           })
@@ -272,7 +283,7 @@ class Server {
       })
 
       spark.on('stats', (data) => {
-        const { stats, proof } = data
+        const {stats, proof} = data
         if (Server.sanitize(stats)
           && !_.isUndefined(stats.stats)) {
           stats.id = proof.address
@@ -286,6 +297,7 @@ class Server {
                   data: stats
                 })
 
+                // @ts-ignore
                 console.success('API', 'STA', 'Stats from:', stats.id)
               }
             }
@@ -294,7 +306,7 @@ class Server {
       })
 
       spark.on('node-ping', (data) => {
-        const { stats, proof } = data
+        const {stats, proof} = data
         if (Server.sanitize(stats)) {
           stats.id = proof.address
           const start = (!_.isUndefined(stats.clientTime) ? stats.clientTime : null)
@@ -304,12 +316,13 @@ class Server {
             serverTime: _.now()
           })
 
+          // @ts-ignore
           console.success('API', 'PIN', 'Ping from:', stats.id)
         }
       })
 
       spark.on('latency', (data) => {
-        const { stats, proof } = data
+        const {stats, proof} = data
         if (Server.sanitize(stats)) {
           stats.id = proof.address
           this.nodes.updateLatency(stats.id, stats.latency, (err, latency) => {
@@ -318,6 +331,7 @@ class Server {
             }
 
             if (latency) {
+              // @ts-ignore
               console.success(
                 'API', 'PIN',
                 'Latency:', JSON.stringify(latency, null, 2),
@@ -345,15 +359,15 @@ class Server {
     })
   }
 
-  initClient () {
+  initClient() {
     // Init Client Socket connection
-    this.client.plugin('emit', require('primus-emit'))
+    this.client.plugin('emit', primusEmit)
 
     this.client.on('connection', (clientSpark) => {
       clientSpark.on('ready', () => {
         clientSpark.emit(
           'init',
-          { nodes: this.nodes.all() }
+          {nodes: this.nodes.all()}
         )
 
         this.nodes.getCharts()
@@ -363,17 +377,17 @@ class Server {
         const serverTime = _.get(data, 'serverTime', 0)
         const latency = Math.ceil((_.now() - serverTime) / 2)
 
-        clientSpark.emit('client-latency', { latency: latency })
+        clientSpark.emit('client-latency', {latency: latency})
       })
     })
   }
 
-  initExternal () {
+  initExternal() {
     // Init external API
-    this.external.plugin('emit', require('primus-emit'))
+    this.external.plugin('emit', primusEmit)
   }
 
-  initNodes () {
+  initNodes() {
     // Init collections
     this.nodes.setChartsCallback((err, charts) => {
       if (err) {
@@ -387,7 +401,7 @@ class Server {
     })
   }
 
-  init () {
+  init() {
     this.initApi()
     this.initClient()
     this.initExternal()
@@ -395,5 +409,3 @@ class Server {
     this.wireup()
   }
 }
-
-module.exports = Server

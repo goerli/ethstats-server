@@ -1,25 +1,28 @@
-const _ = require('lodash')
-const Blockchain = require('./history')
-const Node = require('./node')
+import * as  _ from 'lodash'
+import History from "./history";
+import Node from "./node"
+import * as Primus from "primus"
 
-class Collection {
-  constructor (externalAPI) {
-    this._items = []
-    this._blockchain = new Blockchain()
-    this._debounced = null
+export default class Collection {
+
+  _items: any[] = []
+  _blockchain: History = new History()
+  _debounced: any = null
+  // todo: refactor this outta here
+  _externalAPI: Primus
+  _highestBlock: number = 0
+
+  constructor(externalAPI: Primus) {
     this._externalAPI = externalAPI
-    this._highestBlock = 0
-
-    return this
   }
 
-  add (data, callback) {
-    const node = this.getNodeOrNew({ validatorData: { signer: data.id } }, data)
+  add(data, callback) {
+    const node = this.getNodeOrNew({validatorData: {signer: data.id}}, data)
     node.setInfo(data, callback)
   }
 
-  update (id, stats, callback) {
-    const node = this.getNode({ validatorData: { signer: id } })
+  update(id, stats, callback) {
+    const node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       callback('Node not found', null)
@@ -40,8 +43,8 @@ class Collection {
     }
   }
 
-  addBlock (id, stats, callback) {
-    const node = this.getNode({ validatorData: { signer: id } })
+  addBlock(id, stats, callback) {
+    const node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       console.error(this._items.map(item => console.log(item.validatorData.signer)))
@@ -73,8 +76,8 @@ class Collection {
     }
   }
 
-  updatePending (id, stats, callback) {
-    const node = this.getNode({ validatorData: { signer: id } })
+  updatePending(id, stats, callback) {
+    const node = this.getNode({validatorData: {signer: id}})
 
     if (!node)
       return false
@@ -82,8 +85,8 @@ class Collection {
     node.setPending(stats, callback)
   }
 
-  updateStats (id, stats, callback) {
-    const node = this.getNode({ validatorData: { signer: id } })
+  updateStats(id, stats, callback) {
+    const node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       callback('Node not found', null)
@@ -92,8 +95,8 @@ class Collection {
     }
   }
 
-  updateLatency (id, latency, callback) {
-    const node = this.getNode({ validatorData: { signer: id } })
+  updateLatency(id, latency, callback) {
+    const node = this.getNode({validatorData: {signer: id}})
 
     if (!node)
       return false
@@ -101,8 +104,8 @@ class Collection {
     node.setLatency(latency, callback)
   }
 
-  inactive (id, callback) {
-    const node = this.getNode({ spark: id })
+  inactive(id, callback) {
+    const node = this.getNode({spark: id})
 
     if (!node) {
       callback('Node not found', null)
@@ -112,11 +115,11 @@ class Collection {
     }
   }
 
-  getIndex (search) {
+  getIndex(search) {
     return _.findIndex(this._items, search)
   }
 
-  getNode (search) {
+  getNode(search) {
     const index = this.getIndex(search)
 
     if (index >= 0)
@@ -125,30 +128,30 @@ class Collection {
     return false
   }
 
-  getNodeByIndex (index) {
+  getNodeByIndex(index) {
     if (this._items[index])
       return this._items[index]
 
     return false
   }
 
-  getIndexOrNew (search, data) {
+  getIndexOrNew(search, data) {
     const index = this.getIndex(search)
 
     return (index >= 0 ? index : this._items.push(new Node(data)) - 1)
   }
 
-  getNodeOrNew (search, data) {
+  getNodeOrNew(search, data) {
     return this.getNodeByIndex(this.getIndexOrNew(search, data))
   }
 
-  all () {
+  all() {
     this.removeOldNodes()
 
     return this._items
   }
 
-  removeOldNodes () {
+  removeOldNodes() {
     const deleteList = []
 
     for (let i = this._items.length - 1; i >= 0; i--) {
@@ -164,19 +167,19 @@ class Collection {
     }
   }
 
-  blockPropagationChart () {
+  blockPropagationChart() {
     return this._blockchain.getBlockPropagation()
   }
 
-  setChartsCallback (callback) {
+  setChartsCallback(callback) {
     this._blockchain.setCallback(callback)
   }
 
-  getCharts () {
+  getCharts() {
     this.getChartsDebounced()
   }
 
-  getChartsDebounced () {
+  getChartsDebounced() {
     const self = this
 
     if (this._debounced === null) {
@@ -192,5 +195,3 @@ class Collection {
     this._debounced()
   }
 }
-
-module.exports = Collection

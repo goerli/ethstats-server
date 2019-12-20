@@ -1,11 +1,22 @@
-const _ = require('lodash')
-const trusted = require('./utils/config').trusted
+import * as _ from 'lodash'
+import { trusted } from "./utils/config"
 
 const MAX_HISTORY = 40
 const MAX_INACTIVE_TIME = 1000 * 60 * 60 * 4
 
-class Node {
-  constructor (data) {
+export default class Node {
+
+  id
+  address
+  validatorData
+  trusted
+  info
+  stats
+  history
+  uptime
+  spark
+
+  constructor(data) {
     this.id = null
     this.address = null
     this.validatorData = {
@@ -69,7 +80,7 @@ class Node {
     return this
   }
 
-  init (data) {
+  init(data) {
     _.fill(this.history, -1)
 
     if (this.id === null && this.uptime.started === null)
@@ -83,7 +94,7 @@ class Node {
     this.setInfo(data, null)
   }
 
-  setInfo (data, callback) {
+  setInfo(data, callback) {
     if (!_.isUndefined(data.info)) {
       this.info = data.info
 
@@ -108,7 +119,7 @@ class Node {
     }
   }
 
-  setValidatorData (data) {
+  setValidatorData(data) {
     this.info.name = data.name || data.address
     this.info.contact = data.address
     this.trusted = true
@@ -117,7 +128,7 @@ class Node {
     this.address = data.address
   }
 
-  getInfo () {
+  getInfo() {
     return {
       id: this.id,
       info: this.info,
@@ -138,15 +149,15 @@ class Node {
     }
   }
 
-  setStats (stats, history, callback) {
+  setStats(stats, history, callback) {
     if (!_.isUndefined(stats)) {
-      this.setBlock(_.result(stats, 'block', this.stats.block), history, function (err, block) {
+      this.setBlock(_.result(stats, 'block', this.stats.block), history, function () {
       })
 
-      this.setBasicStats(stats, function (err, stats) {
+      this.setBasicStats(stats, function () {
       })
 
-      this.setPending(_.result(stats, 'pending', this.stats.pending), function (err, stats) {
+      this.setPending(_.result(stats, 'pending', this.stats.pending), function () {
       })
 
       callback(null, this.getStats())
@@ -155,7 +166,7 @@ class Node {
     callback('Stats undefined', null)
   }
 
-  setBlock (block, history, callback) {
+  setBlock(block, history, callback) {
     if (!_.isUndefined(block) && !_.isUndefined(block.number)) {
       if (!_.isEqual(history, this.history) || !_.isEqual(block, this.stats.block)) {
         if (block.number !== this.stats.block.number || block.hash !== this.stats.block.hash) {
@@ -176,7 +187,7 @@ class Node {
     }
   }
 
-  setHistory (history) {
+  setHistory(history) {
     if (_.isEqual(history, this.history)) {
       return false
     }
@@ -199,7 +210,7 @@ class Node {
     return true
   }
 
-  setPending (stats, callback) {
+  setPending(stats, callback) {
     if (!_.isUndefined(stats) && !_.isUndefined(stats.pending)) {
       if (!_.isEqual(stats.pending, this.stats.pending)) {
         this.stats.pending = stats.pending
@@ -216,7 +227,7 @@ class Node {
     }
   }
 
-  setBasicStats (stats, callback) {
+  setBasicStats(stats, callback) {
     if (!_.isUndefined(stats)) {
       if (!_.isEqual(stats, {
         active: this.stats.active,
@@ -245,7 +256,7 @@ class Node {
     }
   }
 
-  setLatency (latency, callback) {
+  setLatency(latency, callback) {
     if (!_.isUndefined(latency)) {
       if (!_.isEqual(latency, this.stats.latency)) {
         this.stats.latency = latency
@@ -262,7 +273,7 @@ class Node {
     }
   }
 
-  getStats () {
+  getStats() {
     return {
       id: this.id,
       stats: {
@@ -282,7 +293,7 @@ class Node {
     }
   }
 
-  getBlockStats () {
+  getBlockStats() {
     return {
       id: this.id,
       block: this.stats.block,
@@ -291,7 +302,7 @@ class Node {
     }
   }
 
-  getBasicStats () {
+  getBasicStats() {
     return {
       id: this.id,
       stats: {
@@ -308,7 +319,7 @@ class Node {
     }
   }
 
-  setState (active) {
+  setState(active) {
     const now = _.now()
 
     if (this.uptime.started !== null) {
@@ -328,7 +339,7 @@ class Node {
     this.stats.uptime = this.calculateUptime()
   }
 
-  calculateUptime () {
+  calculateUptime() {
     if (this.uptime.lastUpdate === this.uptime.started) {
       return 100
     }
@@ -336,11 +347,11 @@ class Node {
     return Math.round(this.uptime.up / (this.uptime.lastUpdate - this.uptime.started) * 100)
   }
 
-  getBlockNumber () {
+  getBlockNumber() {
     return this.stats.block.number
   }
 
-  isInactiveAndOld () {
+  isInactiveAndOld() {
     return (
       this.uptime.lastStatus === false &&
       this.uptime.lastUpdate !== null &&
@@ -348,5 +359,3 @@ class Node {
     )
   }
 }
-
-module.exports = Node

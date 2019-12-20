@@ -1,22 +1,19 @@
-const _ = require('lodash')
-const d3 = require('d3')
+import * as _ from "lodash"
+import * as d3 from "d3"
 
 const MAX_HISTORY = 2000
-
 const MAX_PEER_PROPAGATION = 40
 const MIN_PROPAGATION_RANGE = 0
 const MAX_PROPAGATION_RANGE = 10000
 
 const MAX_BINS = 40
 
-class History {
+export default class History {
 
-  constructor () {
-    this._items = []
-    this._callback = null
-  }
+  _items = []
+  _callback = null
 
-  add (block, id, trusted, addingHistory) {
+  add(block, id, trusted, addingHistory = false) {
     let changed = false
 
     if (!_.isUndefined(block) &&
@@ -42,7 +39,7 @@ class History {
         // We already have a block with this height in collection
 
         // Check if node already checked this block height
-        const propIndex = _.findIndex(historyBlock.propagTimes, { node: id })
+        const propIndex = _.findIndex(historyBlock.propagTimes, {node: id})
 
         // Check if node already check a fork with this height
         forkIndex = this.compareForks(historyBlock, block)
@@ -55,7 +52,7 @@ class History {
             block.propagation = now - historyBlock.forks[forkIndex].received
           } else {
             // No fork found => add a new one
-            const prevBlock = this.prevMaxBlock(block.number)
+            const prevBlock = this.prevMaxBlock()
 
             if (prevBlock) {
               block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
@@ -99,7 +96,7 @@ class History {
             block.received = historyBlock.propagTimes[propIndex].received
             block.propagation = historyBlock.propagTimes[propIndex].propagation
 
-            const prevBlock = this.prevMaxBlock(block.number)
+            const prevBlock = this.prevMaxBlock()
 
             if (prevBlock) {
               block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
@@ -129,7 +126,7 @@ class History {
         // Couldn't find block with this height
 
         // Getting previous max block
-        const prevBlock = this.prevMaxBlock(block.number)
+        const prevBlock = this.prevMaxBlock()
 
         if (prevBlock) {
           block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
@@ -179,7 +176,7 @@ class History {
     return false
   }
 
-  compareBlocks (block1, block2) {
+  compareBlocks(block1, block2) {
     return !(block1.hash !== block2.hash ||
       block1.parentHash !== block2.parentHash ||
       block1.miner !== block2.miner ||
@@ -187,7 +184,7 @@ class History {
       block1.totalDifficulty !== block2.totalDifficulty)
   }
 
-  compareForks (historyBlock, block2) {
+  compareForks(historyBlock, block2) {
     if (_.isUndefined(historyBlock))
       return -1
 
@@ -201,7 +198,7 @@ class History {
     return -1
   }
 
-  _save (block) {
+  _save(block) {
     this._items.unshift(block)
 
     this._items = _.sortBy(this._items, 'height', false).reverse()
@@ -211,7 +208,7 @@ class History {
     }
   }
 
-  clean (max) {
+  clean(max) {
     if (max > 0 && this._items.length > 0 && max < this.bestBlockNumber()) {
       console.log('MAX:', max)
 
@@ -225,8 +222,8 @@ class History {
     }
   }
 
-  search (number) {
-    const index = _.findIndex(this._items, { height: number })
+  search(number) {
+    const index = _.findIndex(this._items, {height: number})
 
     if (index < 0)
       return false
@@ -234,7 +231,7 @@ class History {
     return this._items[index]
   }
 
-  prevMaxBlock () {
+  prevMaxBlock() {
     const heights = this._items.map(item => item.height)
     const index = heights.indexOf(Math.max(...heights))
 
@@ -244,11 +241,11 @@ class History {
     return this._items[index]
   }
 
-  bestBlock () {
+  bestBlock() {
     return _.maxBy(this._items, 'height')
   }
 
-  bestBlockNumber () {
+  bestBlockNumber() {
     const best = this.bestBlock()
 
     if (!_.isUndefined(best) && !_.isUndefined(best.height))
@@ -257,11 +254,11 @@ class History {
     return 0
   }
 
-  worstBlock () {
+  worstBlock() {
     return _.minBy(this._items, 'height')
   }
 
-  worstBlockNumber () {
+  worstBlockNumber() {
     const worst = this.worstBlock()
 
     if (!_.isUndefined(worst) && !_.isUndefined(worst.height))
@@ -270,7 +267,7 @@ class History {
     return 0
   }
 
-  getNodePropagation (id) {
+  getNodePropagation(id) {
     return this._items
       .slice(0, MAX_PEER_PROPAGATION)
       .map(item => {
@@ -281,7 +278,7 @@ class History {
       })
   }
 
-  getBlockPropagation () {
+  getBlockPropagation() {
     const propagation = []
     let avgPropagation = 0
 
@@ -326,7 +323,7 @@ class History {
     }
   }
 
-  getAvgBlocktime () {
+  getAvgBlocktime() {
     const blockTimes = _(this._items)
       .sortBy('height', false)
       .reverse()
@@ -338,7 +335,7 @@ class History {
     return _.sum(blockTimes) / (blockTimes.length === 0 ? 1 : blockTimes.length)
   }
 
-  getMinersCount () {
+  getMinersCount() {
     return _(this._items)
       .sortBy('height', false)
       .reverse()
@@ -352,11 +349,11 @@ class History {
       .value()
   }
 
-  setCallback (callback) {
+  setCallback(callback) {
     this._callback = callback
   }
 
-  getCharts () {
+  getCharts() {
     if (this._callback !== null) {
       const chartHistory = _(this._items)
         .sortBy('height', false)
@@ -395,5 +392,3 @@ class History {
   }
 
 }
-
-module.exports = History
