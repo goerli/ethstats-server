@@ -83,9 +83,9 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
     $localStorage.pinned = $scope.pinned;
   }
 
-  var timeout = setInterval(function () {
-    $scope.$apply();
-  }, 1000);
+  // var timeout = setInterval(function () {
+  //   $scope.$apply();
+  // }, 1000);
 
   $scope.getNumber = function (num) {
     return new Array(num);
@@ -150,16 +150,6 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
           updateActiveNodes();
         }
-
-        break;
-
-      case "add":
-        var index = findIndex({ id: data.id });
-
-        // if( addNewNode(data) )
-        // 	toastr['success']("New node "+ $scope.nodes[findIndex({id: data.id})].info.name +" connected!", "New node!");
-        // else
-        // 	toastr['info']("Node "+ $scope.nodes[index].info.name +" reconnected!", "Node is back!");
 
         break;
 
@@ -363,56 +353,6 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
   function findIndex(search) {
     return _.findIndex($scope.nodes, search);
-  }
-
-  function getMinersNames() {
-    if ($scope.miners.length > 0) {
-      _.forIn($scope.miners, function (value, key) {
-        if (value.name !== false)
-          return;
-
-        if (value.miner === "0x0000000000000000000000000000000000000000")
-          return;
-
-        var name = _.result(_.find(_.pluck($scope.nodes, 'info'), 'coinbase', value.miner), 'name');
-
-        if (!_.isUndefined(name))
-          $scope.miners[key].name = name;
-      });
-    }
-  }
-
-  function addNewNode(data) {
-    var index = findIndex({ id: data.id });
-
-    if (_.isUndefined(data.history)) {
-      data.history = new Array(40);
-      _.fill(data.history, -1);
-    }
-
-    if (index < 0) {
-      if (!_.isUndefined(data.stats) && _.isUndefined(data.stats.hashrate)) {
-        data.stats.hashrate = 0;
-      }
-
-      data.pinned = false;
-
-      $scope.nodes.push(data);
-
-      return true;
-    }
-
-    data.pinned = (!_.isUndefined($scope.nodes[index].pinned) ? $scope.nodes[index].pinned : false);
-
-    if (!_.isUndefined($scope.nodes[index].history)) {
-      data.history = $scope.nodes[index].history;
-    }
-
-    $scope.nodes[index] = data;
-
-    updateActiveNodes();
-
-    return false;
   }
 
   function updateActiveNodes() {
