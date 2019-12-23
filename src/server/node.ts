@@ -1,125 +1,140 @@
-import * as _ from 'lodash'
+// @ts-ignore
+import _ from 'lodash'
 import { trusted } from "./utils/config"
+// @ts-ignore
+import { Stats } from "./interfaces/stats";
+import { Block } from "./interfaces/block";
+import { Validator } from "./interfaces/validator";
+import { Pending } from "./interfaces/pending";
+import { NodeInfo } from "./interfaces/nodeinfo"
+import { BasicStats, BasicStats2 } from "./interfaces/basicstats";
+import { Latency } from "./interfaces/latency";
+import { BlockStats } from "./interfaces/blockstats";
+import { Info } from "./interfaces/info";
+import { Uptime } from "./interfaces/uptime";
 
 const MAX_HISTORY = 40
 const MAX_INACTIVE_TIME = 1000 * 60 * 60 * 4
 
 export default class Node {
 
-  id
-  address
-  validatorData
-  trusted
-  info
-  stats
-  history
-  uptime
-  spark
+  private id: string = null
+  private address: string = null
 
-  constructor(data) {
-    this.id = null
-    this.address = null
-    this.validatorData = {
-      name: null,
-      url: null,
-      affiliation: null,
-      registered: false,
-      elected: false,
-      signer: null
-    }
-    this.trusted = false
-    this.info = {}
-    this.stats = {
-      active: false,
-      mining: false,
-      elected: false,
-      hashrate: 0,
-      peers: 0,
-      pending: 0,
-      gasPrice: 0,
-      block: {
-        number: 0,
-        hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-        difficulty: 0,
-        totalDifficulty: 0,
-        gasLimit: 0,
-        timestamp: 0,
-        time: 0,
-        arrival: 0,
-        received: 0,
-        propagation: 0,
-        transactions: [],
-        uncles: []
+  private info: Info = {
+    canUpdateHistory: false,
+    name: null,
+    contact: null
+  }
+  private stats: Stats = {
+    active: false,
+    mining: false,
+    elected: false,
+    hashrate: 0,
+    peers: 0,
+    pending: 0,
+    gasPrice: 0,
+    block: {
+      number: 0,
+      height: 0,
+      hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      difficulty: '0',
+      totalDifficulty: '0',
+      gasLimit: 0,
+      timestamp: 0,
+      time: 0,
+      validators: {
+        registered: [],
+        elected: []
       },
-      syncing: false,
-      propagationAvg: 0,
-      latency: 0,
-      uptime: 100
-    }
+      arrival: 0,
+      received: 0,
+      propagation: 0,
+      transactions: [],
+      uncles: []
+    },
+    syncing: false,
+    propagationAvg: 0,
+    latency: 0,
+    uptime: 100
+  }
+  private propagationHistory: number[] = []
+  private uptime: Uptime = {
+    started: 0,
+    up: 0,
+    down: 0,
+    lastStatus: false,
+    lastUpdate: 0
+  }
 
-    this.history = new Array(MAX_HISTORY)
+  public name: string = null
+  public validatorData: Validator = {
+    name: null,
+    url: null,
+    address: null,
+    affiliation: null,
+    registered: false,
+    elected: false,
+    signer: null
+  }
+  public trusted: boolean = false
 
-    this.uptime = {
-      started: null,
-      up: 0,
-      down: 0,
-      lastStatus: null,
-      lastUpdate: null
-    }
+  constructor(data: Stats | Validator) {
 
     if (!data.registered) {
-      this.init(data)
+      this.init(data as Stats)
     } else {
-      this.setValidatorData(data)
+      this.setValidatorData(data as Validator)
     }
 
     if (!!data.address) {
       this.address = data.address
     }
-
-    return this
   }
 
-  init(data) {
-    _.fill(this.history, -1)
+  public init(stats: Stats) {
+    _.fill(this.propagationHistory, -1)
 
-    if (this.id === null && this.uptime.started === null)
+    if (this.id === null && this.uptime.started === null) {
       this.setState(true)
+    }
 
-    this.id = _.result(data, 'id', this.id)
+    this.id = _.result(stats, 'id', this.id)
 
-    if (!_.isUndefined(data.latency))
-      this.stats.latency = data.latency
+    if (!_.isUndefined(stats.latency))
+      this.stats.latency = stats.latency
 
-    this.setInfo(data, null)
+    this.setInfo(stats, null)
   }
 
-  setInfo(data, callback) {
-    if (!_.isUndefined(data.info)) {
-      this.info = data.info
+  public setInfo(
+    stats: Stats,
+    callback: { (err: Error | string, info: NodeInfo): void | null }
+  ) {
+    if (!_.isUndefined(stats.info)) {
+      this.info = stats.info
 
-      if (!_.isUndefined(data.info.canUpdateHistory)) {
-        this.info.canUpdateHistory = _.result(data, 'info.canUpdateHistory', false)
+      if (!_.isUndefined(stats.info.canUpdateHistory)) {
+        this.info.canUpdateHistory = _.result(stats, 'info.canUpdateHistory', false)
       }
     }
 
-    if (!_.isUndefined(data.ip)) {
-      if (trusted.indexOf(data.ip) >= 0 || process.env.LITE === 'true') {
+    if (!_.isUndefined(stats.ip)) {
+      if (trusted.indexOf(stats.ip) >= 0 || process.env.LITE === 'true') {
         this.trusted = true
       }
       this.trusted = true
     }
 
-    this.spark = _.result(data, 'spark', null)
-
     this.setState(true)
     this.validatorData.signer = this.id
+
     if (callback !== null) {
       callback(null, this.getInfo())
     }
   }
 
-  setValidatorData(data) {
+  public setValidatorData(data: Validator) {
     this.info.name = data.name || data.address
     this.info.contact = data.address
     this.trusted = true
@@ -128,37 +143,26 @@ export default class Node {
     this.address = data.address
   }
 
-  getInfo() {
-    return {
-      id: this.id,
-      info: this.info,
-      stats: {
-        active: this.stats.active,
-        mining: this.stats.mining,
-        syncing: this.stats.syncing,
-        hashrate: this.stats.hashrate,
-        peers: this.stats.peers,
-        gasPrice: this.stats.gasPrice,
-        block: this.stats.block,
-        propagationAvg: this.stats.propagationAvg,
-        uptime: this.stats.uptime,
-        latency: this.stats.latency,
-        pending: this.stats.pending,
-      },
-      history: this.history,
-    }
-  }
-
-  setStats(stats, history, callback) {
+  public setStats(
+    stats: Stats,
+    history: number[],
+    callback: { (err: Error | string, stats: BasicStats2): void }
+  ) {
     if (!_.isUndefined(stats)) {
-      this.setBlock(_.result(stats, 'block', this.stats.block), history, function () {
+
+      const block = _.result(stats, 'block', this.stats.block)
+      this.setBlock(block, history, () => {
       })
 
-      this.setBasicStats(stats, function () {
+      this.setBasicStats(stats, () => {
       })
 
-      this.setPending(_.result(stats, 'pending', this.stats.pending), function () {
-      })
+      const pending = _.result(stats, 'pending', this.stats.pending)
+
+      if (pending) {
+        this.setPending(stats, () => {
+        })
+      }
 
       callback(null, this.getStats())
     }
@@ -166,17 +170,29 @@ export default class Node {
     callback('Stats undefined', null)
   }
 
-  setBlock(block, history, callback) {
+  public setBlock(
+    block: Block,
+    propagationHistory: number[],
+    callback: { (err: Error | string, blockStats: BlockStats): void }
+  ) {
     if (!_.isUndefined(block) && !_.isUndefined(block.number)) {
-      if (!_.isEqual(history, this.history) || !_.isEqual(block, this.stats.block)) {
-        if (block.number !== this.stats.block.number || block.hash !== this.stats.block.hash) {
+
+      if (
+        !_.isEqual(propagationHistory, this.propagationHistory) ||
+        !_.isEqual(block, this.stats.block)
+      ) {
+        if (
+          block.number !== this.stats.block.number ||
+          block.hash !== this.stats.block.hash
+        ) {
           if (!block.validators.registered) {
             block.validators = this.stats.block.validators
           }
+
           this.stats.block = block
         }
 
-        this.setHistory(history)
+        this.setPropagationHistory(propagationHistory)
 
         callback(null, this.getBlockStats())
       } else {
@@ -187,30 +203,10 @@ export default class Node {
     }
   }
 
-  setHistory(history) {
-    if (_.isEqual(history, this.history)) {
-      return false
-    }
-
-    if (!_.isArray(history)) {
-      this.history = _.fill(new Array(MAX_HISTORY), -1)
-      this.stats.propagationAvg = 0
-
-      return true
-    }
-
-    this.history = history
-
-    const positives = _.filter(history, function (p) {
-      return p >= 0
-    })
-
-    this.stats.propagationAvg = (positives.length > 0 ? Math.round(_.sum(positives) / positives.length) : 0)
-
-    return true
-  }
-
-  setPending(stats, callback) {
+  public setPending(
+    stats: Stats,
+    callback: { (err: Error | string, pending: Pending | null): void }
+  ) {
     if (!_.isUndefined(stats) && !_.isUndefined(stats.pending)) {
       if (!_.isEqual(stats.pending, this.stats.pending)) {
         this.stats.pending = stats.pending
@@ -227,7 +223,10 @@ export default class Node {
     }
   }
 
-  setBasicStats(stats, callback) {
+  public setBasicStats(
+    stats: Stats,
+    callback: { (err: Error | string, basicStats: BasicStats | null): void }
+  ) {
     if (!_.isUndefined(stats)) {
       if (!_.isEqual(stats, {
         active: this.stats.active,
@@ -256,7 +255,10 @@ export default class Node {
     }
   }
 
-  setLatency(latency, callback) {
+  public setLatency(
+    latency: number,
+    callback: { (err: Error | string, latency: Latency): void }
+  ) {
     if (!_.isUndefined(latency)) {
       if (!_.isEqual(latency, this.stats.latency)) {
         this.stats.latency = latency
@@ -273,53 +275,9 @@ export default class Node {
     }
   }
 
-  getStats() {
-    return {
-      id: this.id,
-      stats: {
-        active: this.stats.active,
-        mining: this.stats.mining,
-        syncing: this.stats.syncing,
-        hashrate: this.stats.hashrate,
-        peers: this.stats.peers,
-        gasPrice: this.stats.gasPrice,
-        block: this.stats.block,
-        propagationAvg: this.stats.propagationAvg,
-        uptime: this.stats.uptime,
-        pending: this.stats.pending,
-        latency: this.stats.latency
-      },
-      history: this.history
-    }
-  }
-
-  getBlockStats() {
-    return {
-      id: this.id,
-      block: this.stats.block,
-      propagationAvg: this.stats.propagationAvg,
-      history: this.history
-    }
-  }
-
-  getBasicStats() {
-    return {
-      id: this.id,
-      stats: {
-        active: this.stats.active,
-        mining: this.stats.mining,
-        elected: this.stats.elected,
-        syncing: this.stats.syncing,
-        hashrate: this.stats.hashrate,
-        peers: this.stats.peers,
-        gasPrice: this.stats.gasPrice,
-        uptime: this.stats.uptime,
-        latency: this.stats.latency
-      }
-    }
-  }
-
-  setState(active) {
+  public setState(
+    active: boolean
+  ) {
     const now = _.now()
 
     if (this.uptime.started !== null) {
@@ -339,7 +297,82 @@ export default class Node {
     this.stats.uptime = this.calculateUptime()
   }
 
-  calculateUptime() {
+  public isInactiveAndOld() {
+    return (
+      !this.uptime.lastStatus &&
+      this.uptime.lastUpdate !== null &&
+      (_.now() - this.uptime.lastUpdate) > MAX_INACTIVE_TIME
+    )
+  }
+
+  public getStats(): BasicStats2 {
+    return {
+      id: this.id,
+      stats: {
+        active: this.stats.active,
+        mining: this.stats.mining,
+        syncing: this.stats.syncing,
+        hashrate: this.stats.hashrate,
+        peers: this.stats.peers,
+        gasPrice: this.stats.gasPrice,
+        block: this.stats.block,
+        propagationAvg: this.stats.propagationAvg,
+        uptime: this.stats.uptime,
+        pending: this.stats.pending,
+        latency: this.stats.latency
+      },
+      history: this.propagationHistory
+    }
+  }
+
+  private getBlockStats(): BlockStats {
+    return {
+      id: this.id,
+      block: this.stats.block,
+      propagationAvg: this.stats.propagationAvg,
+      history: this.propagationHistory
+    }
+  }
+
+  private getBasicStats(): BasicStats {
+    return {
+      id: this.id,
+      stats: {
+        active: this.stats.active,
+        mining: this.stats.mining,
+        elected: this.stats.elected,
+        syncing: this.stats.syncing,
+        hashrate: this.stats.hashrate,
+        peers: this.stats.peers,
+        gasPrice: this.stats.gasPrice,
+        uptime: this.stats.uptime,
+        latency: this.stats.latency
+      }
+    }
+  }
+
+  private getInfo(): NodeInfo {
+    return {
+      id: this.id,
+      info: this.info,
+      stats: {
+        active: this.stats.active,
+        mining: this.stats.mining,
+        syncing: this.stats.syncing,
+        hashrate: this.stats.hashrate,
+        peers: this.stats.peers,
+        gasPrice: this.stats.gasPrice,
+        block: this.stats.block,
+        propagationAvg: this.stats.propagationAvg,
+        uptime: this.stats.uptime,
+        latency: this.stats.latency,
+        pending: this.stats.pending,
+      },
+      history: this.propagationHistory,
+    }
+  }
+
+  private calculateUptime() {
     if (this.uptime.lastUpdate === this.uptime.started) {
       return 100
     }
@@ -347,15 +380,30 @@ export default class Node {
     return Math.round(this.uptime.up / (this.uptime.lastUpdate - this.uptime.started) * 100)
   }
 
-  getBlockNumber() {
-    return this.stats.block.number
-  }
+  private setPropagationHistory(
+    propagationHistory: number[]
+  ) {
+    // anything new?
+    if (_.isEqual(propagationHistory, this.propagationHistory)) {
+      // no, nothing to set
+      return false
+    }
 
-  isInactiveAndOld() {
-    return (
-      this.uptime.lastStatus === false &&
-      this.uptime.lastUpdate !== null &&
-      (_.now() - this.uptime.lastUpdate) > MAX_INACTIVE_TIME
-    )
+    if (!_.isArray(propagationHistory)) {
+      this.propagationHistory = [].fill(-1, 0, MAX_HISTORY)
+      this.stats.propagationAvg = 0
+
+      return true
+    }
+
+    this.propagationHistory = propagationHistory
+
+    const positives = _.filter(this.propagationHistory, function (p: number) {
+      return p >= 0
+    })
+
+    this.stats.propagationAvg = (positives.length > 0 ? Math.round(_.sum(positives) / positives.length) : 0)
+
+    return true
   }
 }

@@ -1,38 +1,58 @@
-import * as  _ from 'lodash'
+// @ts-ignore
+import _ from 'lodash'
 import History from "./history";
 import Node from "./node"
+// @ts-ignore
 import * as Primus from "primus"
+import { Stats } from "./interfaces/stats";
+import { Block } from "./interfaces/block";
+import { Validator } from "./interfaces/validator";
+import { Pending } from "./interfaces/pending";
+import { Latency } from "./interfaces/latency";
+import { BasicStats, BasicStats2 } from "./interfaces/basicstats";
+import { NodeInfo } from "./interfaces/nodeinfo";
+import { ChartData } from "./interfaces/chartdata";
+import { BlockStats } from "./interfaces/blockstats";
 
 export default class Collection {
 
-  _items: any[] = []
-  _blockchain: History = new History()
-  _debounced: any = null
+  private nodes: Node[] = []
+  private history: History = new History()
+  private debounced: any = null
   // todo: refactor this outta here
-  _externalAPI: Primus
-  _highestBlock: number = 0
+  private externalAPI: Primus
+  private highestBlock: number = 1
 
-  constructor(externalAPI: Primus) {
-    this._externalAPI = externalAPI
+  constructor(
+    externalAPI: Primus
+  ) {
+    this.externalAPI = externalAPI
   }
 
-  add(data, callback) {
-    const node = this.getNodeOrNew({validatorData: {signer: data.id}}, data)
-    node.setInfo(data, callback)
+  add(
+    stats: Stats,
+    callback: { (err: Error | string, info: NodeInfo): void | null }
+  ) {
+    const node: Node = this.getNodeOrNew({validatorData: {signer: stats.id}}, stats)
+    node.setInfo(stats, callback)
   }
 
-  update(id, stats, callback) {
-    const node = this.getNode({validatorData: {signer: id}})
+  update(
+    id: string,
+    stats: Stats,
+    callback: { (err: Error | string, stats: BasicStats2): void }
+  ) {
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       callback('Node not found', null)
     } else {
-      const block = this._blockchain.add(stats.block, id, node.trusted)
+      const block = this.history.add(stats.block, id, node.trusted)
 
       if (!block) {
         callback('Block data wrong', null)
       } else {
-        const propagationHistory = this._blockchain.getNodePropagation(id)
+        const propagationHistory: number[] = this.history.getNodePropagation(id)
 
         stats.block.arrived = block.block.arrived
         stats.block.received = block.block.received
@@ -43,40 +63,48 @@ export default class Collection {
     }
   }
 
-  addBlock(id, stats, callback) {
+  addBlock(
+    id: string,
+    block: Block,
+    callback: { (err: Error | string, blockStats: BlockStats): void }
+  ) {
     const node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
-      console.error(this._items.map(item => console.log(item.validatorData.signer)))
+      console.error(this.nodes.map(item => console.log(item.validatorData.signer)))
       callback(`Node ${id} not found`, null)
     } else {
 
-      const block = this._blockchain.add(stats, id, node.trusted)
+      const newBlock = this.history.add(block, id, node.trusted)
 
-      if (!block) {
+      if (!newBlock) {
         callback('Block undefined', null)
       } else {
-        const propagationHistory = this._blockchain.getNodePropagation(id)
+        const propagationHistory: number[] = this.history.getNodePropagation(id)
 
-        stats.arrived = block.block.arrived
-        stats.received = block.block.received
-        stats.propagation = block.block.propagation
-        stats.validators = block.block.validators
+        block.arrived = newBlock.block.arrived
+        block.received = newBlock.block.received
+        block.propagation = newBlock.block.propagation
+        block.validators = newBlock.block.validators
 
-        if (block.block.number > this._highestBlock) {
-          this._highestBlock = block.block.number
-          this._externalAPI.write({
+        if (newBlock.block.number > this.highestBlock) {
+          this.highestBlock = newBlock.block.number
+          this.externalAPI.write({
             action: 'lastBlock',
-            number: this._highestBlock
+            number: this.highestBlock
           })
         }
 
-        node.setBlock(stats, propagationHistory, callback)
+        node.setBlock(block, propagationHistory, callback)
       }
     }
   }
 
-  updatePending(id, stats, callback) {
+  updatePending(
+    id: string,
+    stats: Stats,
+    callback: { (err: Error | string, pending: Pending | null): void }
+  ) {
     const node = this.getNode({validatorData: {signer: id}})
 
     if (!node)
@@ -85,7 +113,11 @@ export default class Collection {
     node.setPending(stats, callback)
   }
 
-  updateStats(id, stats, callback) {
+  updateStats(
+    id: string,
+    stats: Stats,
+    callback: { (err: Error | string, basicStats: BasicStats | null): void }
+  ) {
     const node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
@@ -95,7 +127,11 @@ export default class Collection {
     }
   }
 
-  updateLatency(id, latency, callback) {
+  updateLatency(
+    id: string,
+    latency: number,
+    callback: { (err: Error | string, latency: Latency): void }
+  ) {
     const node = this.getNode({validatorData: {signer: id}})
 
     if (!node)
@@ -104,7 +140,10 @@ export default class Collection {
     node.setLatency(latency, callback)
   }
 
-  inactive(id, callback) {
+  inactive(
+    id: string,
+    callback: { (err: Error | string, stats: BasicStats2): void }
+  ) {
     const node = this.getNode({spark: id})
 
     if (!node) {
@@ -115,64 +154,66 @@ export default class Collection {
     }
   }
 
-  getIndex(search) {
-    return _.findIndex(this._items, search)
+  getIndex(search: object) {
+    return _.findIndex(this.nodes, search)
   }
 
-  getNode(search) {
+  getNode(search: object) {
     const index = this.getIndex(search)
 
     if (index >= 0)
-      return this._items[index]
+      return this.nodes[index]
 
-    return false
+    return null
   }
 
-  getNodeByIndex(index) {
-    if (this._items[index])
-      return this._items[index]
+  getNodeByIndex(index: number): Node {
+    if (this.nodes[index])
+      return this.nodes[index]
 
-    return false
+    return
   }
 
-  getIndexOrNew(search, data) {
+  getIndexOrNew(search: object, stats: Stats | Validator) {
     const index = this.getIndex(search)
 
-    return (index >= 0 ? index : this._items.push(new Node(data)) - 1)
+    return (index >= 0 ? index : this.nodes.push(new Node(stats)) - 1)
   }
 
-  getNodeOrNew(search, data) {
+  getNodeOrNew(search: object, data: Stats | Validator): Node {
     return this.getNodeByIndex(this.getIndexOrNew(search, data))
   }
 
   all() {
     this.removeOldNodes()
 
-    return this._items
+    return this.nodes
   }
 
   removeOldNodes() {
     const deleteList = []
 
-    for (let i = this._items.length - 1; i >= 0; i--) {
-      if (this._items[i].isInactiveAndOld()) {
+    for (let i = this.nodes.length - 1; i >= 0; i--) {
+      if (this.nodes[i].isInactiveAndOld()) {
         deleteList.push(i)
       }
     }
 
     if (deleteList.length > 0) {
       for (let i = 0; i < deleteList.length; i++) {
-        this._items.splice(deleteList[i], 1)
+        this.nodes.splice(deleteList[i], 1)
       }
     }
   }
 
   blockPropagationChart() {
-    return this._blockchain.getBlockPropagation()
+    return this.history.getBlockPropagation()
   }
 
-  setChartsCallback(callback) {
-    this._blockchain.setCallback(callback)
+  setChartsCallback(
+    callback: { (err: Error | string, chartData: ChartData): void }
+  ) {
+    this.history.setCallback(callback)
   }
 
   getCharts() {
@@ -180,11 +221,10 @@ export default class Collection {
   }
 
   getChartsDebounced() {
-    const self = this
 
-    if (this._debounced === null) {
-      this._debounced = _.debounce(function () {
-        self._blockchain.getCharts()
+    if (this.debounced === null) {
+      this.debounced = _.debounce(() => {
+        this.history.getCharts()
       }, 500, {
         leading: false,
         maxWait: 2000,
@@ -192,6 +232,6 @@ export default class Collection {
       })
     }
 
-    this._debounced()
+    this.debounced()
   }
 }

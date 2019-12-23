@@ -18,7 +18,9 @@
     "start": "ts-node ./src/server/app.ts"
   },
   "dependencies": {
+    "@types/d3": "^5.7.2",
     "@types/express": "^4.17.2",
+    "@types/lodash": "^4.14.149",
     "@types/node": "^10.17.11",
     "angular": "^1.7.9",
     "body-parser": "^1.18.3",
