@@ -4,15 +4,16 @@ import History from "./history";
 import Node from "./node"
 // @ts-ignore
 import * as Primus from "primus"
-import { Stats } from "./interfaces/stats";
-import { Block } from "./interfaces/block";
-import { Validator } from "./interfaces/validator";
-import { Pending } from "./interfaces/pending";
-import { Latency } from "./interfaces/latency";
-import { BasicStats, BasicStats2 } from "./interfaces/basicstats";
-import { NodeInfo } from "./interfaces/nodeinfo";
-import { ChartData } from "./interfaces/chartdata";
-import { BlockStats } from "./interfaces/blockstats";
+import { Stats } from "./interfaces/Stats";
+import { Validator } from "./interfaces/Validator";
+import { Pending } from "./interfaces/Pending";
+import { Latency } from "./interfaces/Latency";
+import { NodeInfo } from "./interfaces/NodeInfo";
+import { ChartData } from "./interfaces/ChartData";
+import { BlockStats } from "./interfaces/BlockStats";
+import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
+import { NodeStats } from "./interfaces/NodeStats";
+import { BlockData } from "./interfaces/BlockData";
 
 export default class Collection {
 
@@ -31,7 +32,7 @@ export default class Collection {
 
   add(
     stats: Stats,
-    callback: { (err: Error | string, info: NodeInfo): void | null }
+    callback: { (err: Error | string, nodeInfo: NodeInfo): void | null }
   ) {
     const node: Node = this.getNodeOrNew({validatorData: {signer: stats.id}}, stats)
     node.setInfo(stats, callback)
@@ -40,7 +41,7 @@ export default class Collection {
   update(
     id: string,
     stats: Stats,
-    callback: { (err: Error | string, stats: BasicStats2): void }
+    callback: { (err: Error | string, stats: NodeStats): void }
   ) {
     const node: Node = this.getNode({validatorData: {signer: id}})
 
@@ -65,7 +66,7 @@ export default class Collection {
 
   addBlock(
     id: string,
-    block: Block,
+    block: BlockData,
     callback: { (err: Error | string, blockStats: BlockStats): void }
   ) {
     const node = this.getNode({validatorData: {signer: id}})
@@ -116,7 +117,7 @@ export default class Collection {
   updateStats(
     id: string,
     stats: Stats,
-    callback: { (err: Error | string, basicStats: BasicStats | null): void }
+    callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ) {
     const node = this.getNode({validatorData: {signer: id}})
 
@@ -142,7 +143,7 @@ export default class Collection {
 
   inactive(
     id: string,
-    callback: { (err: Error | string, stats: BasicStats2): void }
+    callback: { (err: Error | string, stats: NodeStats): void }
   ) {
     const node = this.getNode({spark: id})
 
@@ -174,13 +175,19 @@ export default class Collection {
     return
   }
 
-  getIndexOrNew(search: object, stats: Stats | Validator) {
+  getIndexOrNew(
+    search: object,
+    stats: Stats | Validator
+  ): number {
     const index = this.getIndex(search)
 
     return (index >= 0 ? index : this.nodes.push(new Node(stats)) - 1)
   }
 
-  getNodeOrNew(search: object, data: Stats | Validator): Node {
+  getNodeOrNew(
+    search: object,
+    data: Stats | Validator
+  ): Node {
     return this.getNodeByIndex(this.getIndexOrNew(search, data))
   }
 

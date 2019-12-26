@@ -1,4 +1,4 @@
-export interface PropagTime {
+export interface PropagationTime {
   node: string,
   trusted: boolean,
   fork: number,

@@ -1,4 +1,4 @@
-import { Validator } from "./validator";
+import { Validator } from "./Validator";
 
 export interface Validators {
   registered: Validator[]

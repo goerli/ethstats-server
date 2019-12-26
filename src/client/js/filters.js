@@ -401,7 +401,7 @@ angular.module('netStatsApp.filters', [])
 	};
 }])
 .filter('blockPropagationFilter', function() {
-	return function(ms, prefix) {
+	var blockPropagationFilter = function(ms, prefix) {
 		if(typeof prefix === 'undefined')
 			prefix = '+';
 
@@ -429,6 +429,10 @@ angular.module('netStatsApp.filters', [])
 		result = ms/1000/60/60/24;
 		return prefix + Math.round(result) + " days";
 	};
+
+	blockPropagationFilter.$stateful = true
+
+	return blockPropagationFilter;
 })
 .filter('blockPropagationAvgFilter', function() {
 	return function(stats, bestBlock) {

@@ -1,4 +1,5 @@
-import { fa, Miner } from "./fu";
+import { Miner } from "./Miner";
+import { Histogram } from "./Histogram";
 
 export interface ChartData {
   height: number[]
@@ -10,5 +11,5 @@ export interface ChartData {
   gasSpending: number[]
   gasLimit: number[]
   miners: Miner[]
-  propagation: fa
+  propagation: Histogram
 }

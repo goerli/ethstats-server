@@ -2,16 +2,18 @@
 import _ from 'lodash'
 import { trusted } from "./utils/config"
 // @ts-ignore
-import { Stats } from "./interfaces/stats";
-import { Block } from "./interfaces/block";
-import { Validator } from "./interfaces/validator";
-import { Pending } from "./interfaces/pending";
-import { NodeInfo } from "./interfaces/nodeinfo"
-import { BasicStats, BasicStats2 } from "./interfaces/basicstats";
-import { Latency } from "./interfaces/latency";
-import { BlockStats } from "./interfaces/blockstats";
-import { Info } from "./interfaces/info";
-import { Uptime } from "./interfaces/uptime";
+import { Stats } from "./interfaces/Stats";
+import { BlockData } from "./interfaces/BlockData";
+import { Validator } from "./interfaces/Validator";
+import { Pending } from "./interfaces/Pending";
+import { NodeInfo } from "./interfaces/NodeInfo"
+import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
+import { Latency } from "./interfaces/Latency";
+import { BlockStats } from "./interfaces/BlockStats";
+import { Info } from "./interfaces/Info";
+import { Uptime } from "./interfaces/Uptime";
+import { NodeStats } from "./interfaces/NodeStats";
+import { NodeDetails } from "./interfaces/NodeDetails";
 
 const MAX_HISTORY = 40
 const MAX_INACTIVE_TIME = 1000 * 60 * 60 * 4
@@ -25,7 +27,8 @@ export default class Node {
     canUpdateHistory: false,
     name: null,
     contact: null
-  }
+  } as Info
+
   private stats: Stats = {
     active: false,
     mining: false,
@@ -36,7 +39,6 @@ export default class Node {
     gasPrice: 0,
     block: {
       number: 0,
-      height: 0,
       hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       difficulty: '0',
       totalDifficulty: '0',
@@ -79,7 +81,9 @@ export default class Node {
   }
   public trusted: boolean = false
 
-  constructor(data: Stats | Validator) {
+  constructor(
+    data: Stats | Validator
+  ) {
 
     if (!data.registered) {
       this.init(data as Stats)
@@ -109,7 +113,7 @@ export default class Node {
 
   public setInfo(
     stats: Stats,
-    callback: { (err: Error | string, info: NodeInfo): void | null }
+    callback: { (err: Error | string, nodeInfo: NodeInfo): void | null }
   ) {
     if (!_.isUndefined(stats.info)) {
       this.info = stats.info
@@ -146,7 +150,7 @@ export default class Node {
   public setStats(
     stats: Stats,
     history: number[],
-    callback: { (err: Error | string, stats: BasicStats2): void }
+    callback: { (err: Error | string, stats: NodeStats): void }
   ) {
     if (!_.isUndefined(stats)) {
 
@@ -171,7 +175,7 @@ export default class Node {
   }
 
   public setBlock(
-    block: Block,
+    block: BlockData,
     propagationHistory: number[],
     callback: { (err: Error | string, blockStats: BlockStats): void }
   ) {
@@ -225,7 +229,7 @@ export default class Node {
 
   public setBasicStats(
     stats: Stats,
-    callback: { (err: Error | string, basicStats: BasicStats | null): void }
+    callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ) {
     if (!_.isUndefined(stats)) {
       if (!_.isEqual(stats, {
@@ -305,7 +309,7 @@ export default class Node {
     )
   }
 
-  public getStats(): BasicStats2 {
+  public getStats(): NodeStats {
     return {
       id: this.id,
       stats: {
@@ -334,7 +338,7 @@ export default class Node {
     }
   }
 
-  private getBasicStats(): BasicStats {
+  private getBasicStats(): BasicStatsResponse {
     return {
       id: this.id,
       stats: {
@@ -351,7 +355,7 @@ export default class Node {
     }
   }
 
-  private getInfo(): NodeInfo {
+  private getInfo(): NodeDetails {
     return {
       id: this.id,
       info: this.info,
@@ -389,7 +393,7 @@ export default class Node {
       return false
     }
 
-    if (!_.isArray(propagationHistory)) {
+    if (!propagationHistory) {
       this.propagationHistory = [].fill(-1, 0, MAX_HISTORY)
       this.stats.propagationAvg = 0
 
@@ -398,9 +402,11 @@ export default class Node {
 
     this.propagationHistory = propagationHistory
 
-    const positives = _.filter(this.propagationHistory, function (p: number) {
-      return p >= 0
-    })
+    const positives = _.filter(
+      this.propagationHistory,
+      (p: number) => {
+        return p >= 0
+      })
 
     this.stats.propagationAvg = (positives.length > 0 ? Math.round(_.sum(positives) / positives.length) : 0)
 

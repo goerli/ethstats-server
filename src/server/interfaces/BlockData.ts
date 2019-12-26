@@ -1,7 +1,6 @@
-import { Validators } from "./validators";
-import { PropagTime } from "./propagtime";
+import { Validators } from "./Validators";
 
-export interface Block {
+export interface BlockData {
   number?: number
   hash?: string
   parentHash?: string
@@ -12,17 +11,13 @@ export interface Block {
   gasUsed?: number
   timestamp?: number
   time?: number
-  height: number
   arrival?: number
   validators?: Validators
   received?: number
   trusted?: boolean
   arrived?: number
   fork?: number
-  forks?: Block[]
-  block?: Block
   propagation?: number
-  propagTimes?: PropagTime[]
   transactions?: any[]
   uncles?: any[]
 }
