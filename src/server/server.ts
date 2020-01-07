@@ -35,6 +35,8 @@ import { ClientPong } from "./interfaces/ClientPong";
 import { NodeResponsePing } from "./interfaces/NodeResponsePing";
 import { NodeStats } from "./interfaces/NodeStats";
 import { NodeResponseWrapped } from "./interfaces/NodeResponseWrapped";
+import { NodeInformation } from "./interfaces/NodeInformation";
+import { NodeData } from "./interfaces/NodeData";
 
 // general config
 const clientPingTimeout = 5 * 1000
@@ -221,7 +223,7 @@ export default class Server {
           console.error(
             'API', 'CON', 'Closed - wrong auth',
             'name:', stats.id,
-            'address:', stats.address
+            'address:', proof.address
           )
 
           return false
@@ -230,14 +232,19 @@ export default class Server {
         console.info('API', 'CON', 'Hello', stats.id)
 
         if (!_.isUndefined(stats.info)) {
-          stats.id = proof.address
-          stats.address = proof.address
-          stats.ip = spark.address.ip
-          stats.spark = spark.id
-          stats.latency = spark.latency || 0
+          const nodeData: NodeData = {
+            id: proof.address,
+            address: proof.address,
+            ip: spark.address.ip,
+            spark: spark.id,
+            latency: spark.latency || 0
+          }
 
           this.nodes.add(
-            stats,
+            <NodeInformation>{
+              nodeData,
+              stats
+            },
             (err: Error | string, info: NodeInfo) => {
               if (err) {
                 console.error('API', 'CON', 'Connection error:', err)
@@ -327,6 +334,7 @@ export default class Server {
                 this.nodes.getCharts()
               }
             })
+
         } else {
           console.error('API', 'BLK', 'Block error:', data)
         }
@@ -453,7 +461,7 @@ export default class Server {
       spark.on('end', (data: NodeResponse) => {
         this.nodes.inactive(
           spark.id,
-          (err: Error | string, stats: NodeStats
+          (err: Error | string, nodeStats: NodeStats
           ) => {
 
             if (err) {
@@ -465,7 +473,7 @@ export default class Server {
             } else {
               this.client.write({
                 action: 'inactive',
-                data: stats
+                data: nodeStats
               })
 
               console.warn(

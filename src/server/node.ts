@@ -14,6 +14,7 @@ import { Info } from "./interfaces/Info";
 import { Uptime } from "./interfaces/Uptime";
 import { NodeStats } from "./interfaces/NodeStats";
 import { NodeDetails } from "./interfaces/NodeDetails";
+import { NodeInformation } from "./interfaces/NodeInformation";
 
 const MAX_HISTORY = 40
 const MAX_INACTIVE_TIME = 1000 * 60 * 60 * 4
@@ -21,6 +22,7 @@ const MAX_INACTIVE_TIME = 1000 * 60 * 60 * 4
 export default class Node {
 
   private id: string = null
+  private spark: string
   private address: string = null
 
   private info: Info = {
@@ -82,49 +84,53 @@ export default class Node {
   public trusted: boolean = false
 
   constructor(
-    data: Stats | Validator
+    data: NodeInformation | Validator
   ) {
 
-    if (!data.registered) {
-      this.init(data as Stats)
-    } else {
+    if ("registered" in data) {
       this.setValidatorData(data as Validator)
+    } else {
+      this.init(data as NodeInformation)
     }
 
-    if (!!data.address) {
-      this.address = data.address
+    if ('nodeData' in data) {
+      this.address = data.nodeData.address
     }
   }
 
-  public init(stats: Stats) {
+  public init(
+    nodeInformation: NodeInformation
+  ) {
     _.fill(this.propagationHistory, -1)
 
     if (this.id === null && this.uptime.started === null) {
       this.setState(true)
     }
 
-    this.id = _.result(stats, 'id', this.id)
+    this.id = _.result(nodeInformation.nodeData, 'id', this.id)
+    this.spark = nodeInformation.nodeData.spark
 
-    if (!_.isUndefined(stats.latency))
-      this.stats.latency = stats.latency
+    if (!_.isUndefined(nodeInformation.nodeData.latency)) {
+      this.stats.latency = nodeInformation.nodeData.latency
+    }
 
-    this.setInfo(stats, null)
+    this.setInfo(nodeInformation, null)
   }
 
   public setInfo(
-    stats: Stats,
+    nodeInformation: NodeInformation,
     callback: { (err: Error | string, nodeInfo: NodeInfo): void | null }
   ) {
-    if (!_.isUndefined(stats.info)) {
-      this.info = stats.info
+    if (!_.isUndefined(nodeInformation.stats.info)) {
+      this.info = nodeInformation.stats.info
 
-      if (!_.isUndefined(stats.info.canUpdateHistory)) {
-        this.info.canUpdateHistory = _.result(stats, 'info.canUpdateHistory', false)
+      if (!_.isUndefined(nodeInformation.stats.info.canUpdateHistory)) {
+        this.info.canUpdateHistory = _.result(nodeInformation.stats, 'info.canUpdateHistory', false)
       }
     }
 
-    if (!_.isUndefined(stats.ip)) {
-      if (trusted.indexOf(stats.ip) >= 0 || process.env.LITE === 'true') {
+    if (!_.isUndefined(nodeInformation.nodeData.ip)) {
+      if (trusted.indexOf(nodeInformation.nodeData.ip) >= 0) {
         this.trusted = true
       }
       this.trusted = true
@@ -133,7 +139,7 @@ export default class Node {
     this.setState(true)
     this.validatorData.signer = this.id
 
-    if (callback !== null) {
+    if (callback) {
       callback(null, this.getInfo())
     }
   }

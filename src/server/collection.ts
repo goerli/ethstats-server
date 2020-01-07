@@ -14,6 +14,7 @@ import { BlockStats } from "./interfaces/BlockStats";
 import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { NodeStats } from "./interfaces/NodeStats";
 import { BlockData } from "./interfaces/BlockData";
+import { NodeInformation } from "./interfaces/NodeInformation";
 
 export default class Collection {
 
@@ -30,41 +31,51 @@ export default class Collection {
     this.externalAPI = externalAPI
   }
 
-  add(
-    stats: Stats,
+  public add(
+    nodeInformation: NodeInformation,
     callback: { (err: Error | string, nodeInfo: NodeInfo): void | null }
   ) {
-    const node: Node = this.getNodeOrNew({validatorData: {signer: stats.id}}, stats)
-    node.setInfo(stats, callback)
+    const node: Node = this.getNodeOrNew(
+      {validatorData: {signer: nodeInformation.stats.id}},
+      nodeInformation
+    )
+    node.setInfo(
+      nodeInformation,
+      callback
+    )
   }
 
-  update(
-    id: string,
+  // todo: this is dead code!
+  private update(
     stats: Stats,
     callback: { (err: Error | string, stats: NodeStats): void }
   ) {
-    const node: Node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode({validatorData: {signer: stats.id}})
 
     if (!node) {
       callback('Node not found', null)
     } else {
-      const block = this.history.add(stats.block, id, node.trusted)
+      const block = this.history.add(stats.block, stats.id, node.trusted)
 
       if (!block) {
         callback('Block data wrong', null)
       } else {
-        const propagationHistory: number[] = this.history.getNodePropagation(id)
+        const propagationHistory: number[] = this.history.getNodePropagation(stats.id)
 
         stats.block.arrived = block.block.arrived
         stats.block.received = block.block.received
         stats.block.propagation = block.block.propagation
 
-        node.setStats(stats, propagationHistory, callback)
+        node.setStats(
+          stats,
+          propagationHistory,
+          callback
+        )
       }
     }
   }
 
-  addBlock(
+  public addBlock(
     id: string,
     block: BlockData,
     callback: { (err: Error | string, blockStats: BlockStats): void }
@@ -101,7 +112,7 @@ export default class Collection {
     }
   }
 
-  updatePending(
+  public updatePending(
     id: string,
     stats: Stats,
     callback: { (err: Error | string, pending: Pending | null): void }
@@ -114,7 +125,7 @@ export default class Collection {
     node.setPending(stats, callback)
   }
 
-  updateStats(
+  public updateStats(
     id: string,
     stats: Stats,
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
@@ -128,7 +139,7 @@ export default class Collection {
     }
   }
 
-  updateLatency(
+  public updateLatency(
     id: string,
     latency: number,
     callback: { (err: Error | string, latency: Latency): void }
@@ -141,10 +152,10 @@ export default class Collection {
     node.setLatency(latency, callback)
   }
 
-  inactive(
+  public inactive(
     id: string,
     callback: { (err: Error | string, stats: NodeStats): void }
-  ) {
+  ): void {
     const node = this.getNode({spark: id})
 
     if (!node) {
@@ -155,49 +166,56 @@ export default class Collection {
     }
   }
 
-  getIndex(search: object) {
+  public getIndex(
+    search: object
+  ): number {
     return _.findIndex(this.nodes, search)
   }
 
-  getNode(search: object) {
+  private getNode(
+    search: object
+  ): Node {
     const index = this.getIndex(search)
 
-    if (index >= 0)
+    if (index >= 0) {
       return this.nodes[index]
+    }
 
     return null
   }
 
-  getNodeByIndex(index: number): Node {
+  private getNodeByIndex(
+    index: number
+  ): Node {
     if (this.nodes[index])
       return this.nodes[index]
 
     return
   }
 
-  getIndexOrNew(
+  private getIndexOrNew(
     search: object,
-    stats: Stats | Validator
+    data: NodeInformation | Validator
   ): number {
     const index = this.getIndex(search)
 
-    return (index >= 0 ? index : this.nodes.push(new Node(stats)) - 1)
+    return (index >= 0 ? index : this.nodes.push(new Node(data)) - 1)
   }
 
-  getNodeOrNew(
+  public getNodeOrNew(
     search: object,
-    data: Stats | Validator
+    data: NodeInformation | Validator
   ): Node {
     return this.getNodeByIndex(this.getIndexOrNew(search, data))
   }
 
-  all() {
+  public all() {
     this.removeOldNodes()
 
     return this.nodes
   }
 
-  removeOldNodes() {
+  private removeOldNodes() {
     const deleteList = []
 
     for (let i = this.nodes.length - 1; i >= 0; i--) {
@@ -213,21 +231,22 @@ export default class Collection {
     }
   }
 
-  blockPropagationChart() {
+  // todo: this is dead code
+  private blockPropagationChart() {
     return this.history.getBlockPropagation()
   }
 
-  setChartsCallback(
+  public setChartsCallback(
     callback: { (err: Error | string, chartData: ChartData): void }
   ) {
     this.history.setCallback(callback)
   }
 
-  getCharts() {
+  public getCharts() {
     this.getChartsDebounced()
   }
 
-  getChartsDebounced() {
+  private getChartsDebounced() {
 
     if (this.debounced === null) {
       this.debounced = _.debounce(() => {
