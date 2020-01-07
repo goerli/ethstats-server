@@ -38,9 +38,9 @@ grunt --configPath="src/js/celoConfig.js"
 ```
 
 #### Run
-Start a node process and pass a trusted node to it or edit the list of trusted nodes in [the server config](/lib/utils/config.js).
+Start a node process and pass a comma-separated list of trusted addresses to it or edit the list of trusted addresses in [the server config](/lib/utils/config.js).
 
 ```bash
-TRUSTED_NODE=0x47e172f6cfb6c7d01c1574fa3e2be7cc73269d95 npm start
+TRUSTED_ADDRESSES="0x47e172F6CfB6c7D01C1574fa3E2Be7CC73269D95,0xa0Af2E71cECc248f4a7fD606F203467B500Dd53B" npm start
 ```
 Find the interface at http://localhost:3000
