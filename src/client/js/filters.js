@@ -335,12 +335,14 @@ angular.module('netStatsApp.filters', [])
 	};
 })
 .filter('latencyFilter', function() {
-	return function(stats) {
+	var latencyFilter = function(stats) {
 		if(stats.active === false)
 			return 'offline';
 		else
 			return stats.latency + ' ms';
 	}
+	latencyFilter.$stateful = true
+	return latencyFilter
 })
 .filter('latencyClass', function() {
 	return function(stats) {
