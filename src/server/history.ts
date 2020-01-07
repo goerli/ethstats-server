@@ -21,7 +21,12 @@ export default class History {
   private blocks: BlockWrapper[] = []
   private callback: { (err: Error | string, chartData: ChartData): void } = null
 
-  add(block: BlockData, id: string, trusted: boolean, addingHistory = false) {
+  add(
+    block: BlockData,
+    id: string,
+    trusted: boolean,
+    addingHistory = false
+  ) {
     let changed = false
 
     if (
@@ -216,7 +221,7 @@ export default class History {
       .unshift(block)
 
     this.blocks = this.blocks.sort(
-      (block1: BlockWrapper, block2: BlockWrapper) => block1.height - block2.height
+      (block1: BlockWrapper, block2: BlockWrapper) => block2.height - block1.height
     )
 
     if (this.blocks.length > MAX_HISTORY) {
@@ -292,11 +297,14 @@ export default class History {
     id: string
   ): number[] {
     return this.blocks
-      .sort((blockA, blockB) => blockB.height - blockA.height)
-      .slice(0, MAX_PEER_PROPAGATION)
+      .slice(
+        0, MAX_PEER_PROPAGATION
+      )
       .map((block: BlockWrapper) => {
 
-        const matches = block.propagTimes.filter((propagationTime: PropagationTime) => propagationTime.node === id)
+        const matches = block.propagTimes.filter(
+          (propagationTime: PropagationTime) => propagationTime.node === id
+        )
 
         if (matches.length > 0) {
           return matches[0].propagation
@@ -357,8 +365,6 @@ export default class History {
 
   private getAvgBlocktime(): number {
     const blockTimes = _(this.blocks)
-      .sortBy('height',)
-      .reverse()
       .toArray()
       .map((item: BlockWrapper): number => {
         return item.block.time / 1000
@@ -370,8 +376,6 @@ export default class History {
 
   private getMinersCount(): Miner[] {
     return _(this.blocks)
-      .sortBy('height')
-      .reverse()
       .slice(0, MAX_BINS)
       .map((item: BlockWrapper): Miner => {
         return {
@@ -400,8 +404,6 @@ export default class History {
     if (this.callback !== null) {
 
       const chartHistory = _(this.blocks)
-        .sortBy('height')
-        .reverse()
         .slice(0, MAX_BINS)
         .toArray()
         .map((blockWrapper: BlockWrapper): {
