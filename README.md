@@ -7,8 +7,8 @@ This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-a
 ## Proof-of-Authority
 ![Screenshot](src/images/screenshot-poa.png "Screenshot POA")
 
-* Demo: https://kovan-stats.parity.io/
 * Demo: https://stats.goerli.net/
+* Demo: https://kotti.goerli.net/
 
 #### Prerequisite
 * node
@@ -51,7 +51,7 @@ Find the interface at http://localhost:3000
 
 ![Screenshot](src/images/screenshot-pow.png "Screenshot POW")
 
-* Demo: https://ropsten-stats.parity.io/
+* Demo: https://mordor.dash.fault.dev/
 
 Same as above, just run the `pow` build task in Grunt.
 
