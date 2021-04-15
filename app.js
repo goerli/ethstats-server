@@ -2,9 +2,13 @@ var _ = require('lodash');
 var logger = require('./lib/utils/logger');
 var chalk = require('chalk');
 var http = require('http');
+var fs = require('fs');
 
 // Init WS SECRET
 var WS_SECRET;
+
+STATIC_NODES_JSON = 'static-nodes.json';
+exports.STATIC_NODES_JSON = STATIC_NODES_JSON;
 
 if( !_.isUndefined(process.env.WS_SECRET) && !_.isNull(process.env.WS_SECRET) )
 {
@@ -81,6 +85,9 @@ external.plugin('emit', require('primus-emit'));
 // Init collections
 var Collection = require('./lib/collection');
 var Nodes = new Collection(external);
+
+// Node Id to Enode mapping
+var enodes = {};
 
 Nodes.setChartsCallback(function (err, charts)
 {
@@ -270,6 +277,12 @@ api.on('connection', function (spark)
 		}
 	});
 
+	spark.on('enode', function (data)
+  {
+    console.success('API', 'EN', 'Enode from:', data.id);
+    enodes[data.id] = data.enode
+    fs.writeFileSync(STATIC_NODES_JSON, JSON.stringify(Object.values(enodes)));
+  });
 
 	spark.on('history', function (data)
 	{
