@@ -7,8 +7,6 @@ var fs = require('fs');
 // Init WS SECRET
 var WS_SECRET;
 
-STATIC_NODES_JSON = 'static-nodes.json';
-exports.STATIC_NODES_JSON = STATIC_NODES_JSON;
 
 if( !_.isUndefined(process.env.WS_SECRET) && !_.isNull(process.env.WS_SECRET) )
 {
@@ -36,14 +34,8 @@ else
 var banned   = require('./lib/utils/config').banned;
 var reserved = require('./lib/utils/config').reserved;
 
-// Init http server
-if( process.env.NODE_ENV !== 'production' )
-{
-	var app = require('./lib/express');
-	server = http.createServer(app);
-}
-else
-	server = http.createServer();
+var app = require('./lib/express');
+server = http.createServer(app);
 
 // Init socket vars
 var Primus = require('primus');
@@ -86,8 +78,6 @@ external.plugin('emit', require('primus-emit'));
 var Collection = require('./lib/collection');
 var Nodes = new Collection(external);
 
-// Node Id to Enode mapping
-var enodes = {};
 
 Nodes.setChartsCallback(function (err, charts)
 {
@@ -277,12 +267,10 @@ api.on('connection', function (spark)
 		}
 	});
 
-	spark.on('enode', function (data)
-  {
-    console.success('API', 'EN', 'Enode from:', data.id);
-    enodes[data.id] = data.enode
-    fs.writeFileSync(STATIC_NODES_JSON, JSON.stringify(Object.values(enodes)));
-  });
+	spark.on('enode', function (data) {
+		console.success('API', 'EN', 'Enode from:', data.id);
+		app.enodes[data.id] = data.enode;
+	  });
 
 	spark.on('history', function (data)
 	{
