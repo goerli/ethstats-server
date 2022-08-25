@@ -11,5 +11,3 @@ config/nodes.js
 .node-xmlhttprequest-*
 ws_secret.json
 stats.json
-package-lock.json
-
