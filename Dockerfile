@@ -1,10 +1,15 @@
-FROM node
+FROM node:lts-alpine AS builder
+ARG GRUNT_TASK=default
+WORKDIR /ethstats-server
+COPY ["package.json", "package-lock.json*", "./"]
+RUN npm ci --only=production && npm install -g grunt-cli
+COPY --chown=node:node . .
+RUN grunt $GRUNT_TASK
 
-RUN git clone https://github.com/goerli/netstats-server /netstats-server
-WORKDIR /netstats-server
-RUN npm install
-RUN npm install -g grunt-cli
-RUN grunt
-
+FROM node:lts-alpine
+RUN apk add dumb-init
+WORKDIR /ethstats-server
+COPY --chown=node:node --from=builder /ethstats-server .
+USER node
 EXPOSE  3000
-CMD ["npm", "start"]
+CMD ["dumb-init", "node", "./bin/www"]
