@@ -4,8 +4,8 @@
   "version": "0.2.0",
   "private": true,
   "engines": {
-    "node": "8.11.1",
-    "npm": "6.4.1"
+    "node": "16.17.0",
+    "npm": "8.15.0"
   },
   "scripts": {
     "dist": "grunt",
@@ -27,7 +27,7 @@
     "grunt-contrib-pug": "^3.0.0",
     "grunt-contrib-uglify": "^4.0.0",
     "pug": "^3.0.2",
-    "lodash": "4.17.19",
+    "lodash": "4.17.21",
     "primus": "^7.3.1",
     "primus-emit": "^1.0.0",
     "primus-spark-latency": "^0.1.1",
