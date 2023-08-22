@@ -2,6 +2,7 @@ var _ = require('lodash');
 var logger = require('./lib/utils/logger');
 var chalk = require('chalk');
 var http = require('http');
+const v8 = require('v8')
 
 // Init WS SECRET
 var WS_SECRET;
@@ -97,10 +98,32 @@ Nodes.setChartsCallback(function (err, charts)
 	}
 });
 
+let connections=0
+const C_LIMIT = 3
+const C_RESET_MS = 90_000
+setInterval(() => {
+	if(connections > C_LIMIT){
+		const stats = v8.getHeapStatistics();
+		if(stats.used_heap_size/1000000 < 1000){
+			console.success('API', 'CON', 'RESET-LIMIT(MB) ', Math.floor(stats.used_heap_size/1000000), 'CON: ' + connections, 'WINDOW(sec): ', Math.floor(C_RESET_MS/1000) , JSON.stringify(stats));
+			connections=0
+		}else{
+			console.success('API', 'CON', 'RESET-SKIP(MB) ', Math.floor(stats.used_heap_size/1000000), 'CON: ' + connections, 'WINDOW(sec):', Math.floor(C_RESET_MS/1000), JSON.stringify(stats));
+		}
+	}
+}, C_RESET_MS);
+
 
 // Init API Socket events
 api.on('connection', function (spark)
 {
+	if(connections > C_LIMIT){
+		// connection limit reached for the window, skip proceeding with connection
+		console.success('API', 'CON', 'LIMIT: '+connections, spark.address.ip);
+		spark.end(undefined, { reconnect: true }); // trigger a client-side reconnection
+		return false
+	}
+	connections++
 	console.info('API', 'CON', 'Open:', spark.address.ip);
 
 	spark.on('hello', function (data)
@@ -133,7 +156,7 @@ api.on('connection', function (spark)
 				{
 					spark.emit('ready');
 
-					console.success('API', 'CON', 'Connected', data.id);
+					console.success('API', 'CON', 'Connected: ' + connections, data.id);
 
 					client.write({
 						action: 'add',
