@@ -1,7 +1,7 @@
 {
   "name": "ethstats-server",
   "description": "Ethstats Network Dashboard",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "engines": {
     "node": "16.17.0",

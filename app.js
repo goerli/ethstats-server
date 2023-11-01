@@ -99,8 +99,8 @@ Nodes.setChartsCallback(function (err, charts)
 });
 
 let connections=0
-const C_LIMIT = 3
-const C_RESET_MS = 90_000
+const C_LIMIT = 5
+const C_RESET_MS = 30_000
 setInterval(() => {
 	if(connections > C_LIMIT){
 		const stats = v8.getHeapStatistics();
