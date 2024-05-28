@@ -1,0 +1,55 @@
+name: Build LUKSO Network Execution Status docker-image
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  IMAGE_NAME: europe-docker.pkg.dev/lks-lz-artifacts/docker-network-execution-stats/network-execution-stats
+
+jobs:
+  network-execution-stats:
+    runs-on: ubuntu-latest
+
+    # id token
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      # check out the repository
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      # https://github.com/google-github-actions/auth#setup
+      - id: gcpauth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          create_credentials_file: 'true'
+          workload_identity_provider: 'projects/311968610280/locations/global/workloadIdentityPools/github/providers/github'
+          service_account: 'artifact-deployer@lks-lz-management.iam.gserviceaccount.com'
+
+      # login to gcp
+      - name: login
+        run: |-
+          gcloud auth login --brief --cred-file="${{ steps.gcpauth.outputs.credentials_file_path }}"
+          gcloud auth configure-docker europe-docker.pkg.dev
+
+      # Docker Build and Push to the GCR
+      - name: Build & Push docker
+        uses: docker/build-push-action@v2
+        with:
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+            ${{ env.IMAGE_NAME }}:latest
