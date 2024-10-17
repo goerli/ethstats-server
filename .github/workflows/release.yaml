@@ -1,0 +1,25 @@
+name: Docker Image Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  releaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Docker Tag
+        run: echo "DOCKER_TAG=${GITHUB_SHA:0:7}-$(date +%s)" | tee $GITHUB_ENV
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_REPO_USER }}
+          password: ${{ secrets.DOCKER_REPO_TOKEN }}
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: consensys/linea-ethstats-server:${{ env.DOCKER_TAG }}
