@@ -12,7 +12,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.20.3",
     "chalk": "^2.4.1",
     "d3": "3.5.17",
     "debug": "^4.1.0",
