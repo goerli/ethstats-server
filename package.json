@@ -27,7 +27,7 @@
     "grunt-contrib-pug": "^3.0.0",
     "grunt-contrib-uglify": "^4.0.0",
     "pug": "^3.0.3",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "primus": "^8.0.9",
     "primus-emit": "^1.0.0",
     "primus-spark-latency": "^0.1.1",
